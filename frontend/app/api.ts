@@ -1,4 +1,4 @@
-const BASE_URL = "http://192.168.1.8:8080/employees"; // Your backend API base URL
+const BASE_URL = "http://localhost:8080/employees"; // Your backend API base URL
 
 // Interface for Employee to ensure type safety
 interface Employee {
