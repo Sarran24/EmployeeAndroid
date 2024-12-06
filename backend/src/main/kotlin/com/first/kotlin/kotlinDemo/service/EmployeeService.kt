@@ -5,6 +5,8 @@ import com.google.cloud.firestore.Firestore
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
 import org.springframework.http.HttpStatus
+import org.springframework.web.multipart.MultipartFile
+import java.util.*
 
 @Service
 class EmployeeService(private val firestore: Firestore) {
@@ -63,5 +65,32 @@ class EmployeeService(private val firestore: Firestore) {
         }
         documentRef.update("active", false).get()
         return "Employee with ID: $id has been deactivated"
+    }
+
+    fun uploadProfilePicture(id: String, file: MultipartFile): String {
+        val documentRef = firestore.collection(collection).document(id)
+        val document = documentRef.get().get()
+        if (!document.exists()) {
+            throw ResponseStatusException(HttpStatus.NOT_FOUND, "Employee not found")
+        }
+
+        var base64Image = Base64.getEncoder().encodeToString(file.bytes)
+        base64Image = "data:image/jpeg;base64," + base64Image
+        documentRef.update("profilePicture", base64Image).get()
+
+        return "Profile picture uploaded successfully for Employee ID: $id"
+    }
+
+
+    fun getProfilePicture(id: String): String {
+        val documentRef = firestore.collection(collection).document(id)
+        val document = documentRef.get().get()
+        if (!document.exists()) {
+            throw ResponseStatusException(HttpStatus.NOT_FOUND, "Employee not found")
+        }
+
+        val base64Image = document.getString("profilePicture")
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Profile picture not found")
+        return base64Image
     }
 }

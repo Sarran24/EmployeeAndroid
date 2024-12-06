@@ -20,7 +20,6 @@ class FirebaseConfig {
         val dotenv = Dotenv.load()
         val serviceAccountKey = dotenv["FIREBASE_SERVICE_ACCOUNT_KEY"]
 
-        // Decode the base64 encoded Firebase service account key
         val decodedJson = String(Base64.getDecoder().decode(serviceAccountKey))
         val serviceAccount = ByteArrayInputStream(decodedJson.toByteArray())
         val options = FirebaseOptions.builder()
