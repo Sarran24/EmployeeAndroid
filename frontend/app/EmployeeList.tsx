@@ -82,7 +82,7 @@ const EmployeeList: React.FC<{ navigation: any }> = ({ navigation }) => {
                 }
             >
                 <Text style={styles.employeeName}>{item.name}</Text>
-                <Text>TestGit</Text>
+                <Text>TestGit2</Text>
                 <Text style={styles.employeePosition}>
                     Position: {item.position}
                 </Text>
