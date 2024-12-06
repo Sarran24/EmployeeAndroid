@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="9a77fab1-8cf5-4ab0-a036-a0b72fae0fb9" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/backend/backend/.gitattributes" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/backend/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/backend/.mvn/wrapper/maven-wrapper.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/backend/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/backend/mvnw" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/backend/mvnw.cmd" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/backend/pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/backend/src/main/kotlin/com/first/kotlin/kotlinDemo/KotlinDemoApplication.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/backend/src/main/kotlin/com/first/kotlin/kotlinDemo/configuration/FirebaseConfig.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/backend/src/main/kotlin/com/first/kotlin/kotlinDemo/configuration/WebConfig.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/backend/src/main/kotlin/com/first/kotlin/kotlinDemo/employee/Employee.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/backend/src/main/kotlin/com/first/kotlin/kotlinDemo/rest/EmployeeController.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/backend/src/main/kotlin/com/first/kotlin/kotlinDemo/service/EmployeeService.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/backend/src/main/kotlin/com/first/kotlin/kotlinDemo/service/FirestoreService.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/backend/src/main/resources/application.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/backend/src/main/resources/fir-mobileapp-6b7d4-firebase-adminsdk-go1g2-fd740ae3eb.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/backend/src/test/kotlin/com/first/kotlin/kotlinDemo/KotlinDemoApplicationTests.kt" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Kotlin File" />
+        <option value="Kotlin Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/backend" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 6
+}</component>
+  <component name="ProjectId" id="2pZORHDnIJL0rwZRMfuIKpHGlNX" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Kotlin.KotlinDemoApplicationKt.executor": "Run",
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "Spring Boot.KotlinDemoApplication.executor": "Run",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/fahyi/Downloads/kotlinDemo/kotlinDemo",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "reference.projectsettings.compiler.javacompiler",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\fahyi\Downloads\kotlinDemo\kotlinDemo\src\main\resources" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Kotlin.KotlinDemoApplicationKt">
+    <configuration name="KotlinDemoApplicationKt" type="JetRunConfigurationType" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.first.kotlin.kotlinDemo.KotlinDemoApplicationKt" />
+      <module name="kotlinDemo" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="KotlinDemoApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <module name="kotlinDemo" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.first.kotlin.kotlinDemo.KotlinDemoApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Kotlin.KotlinDemoApplicationKt" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9f38398b9061-18abd8497189-intellij.indexing.shared.core-IU-241.14494.240" />
+        <option value="bundled-js-predefined-1d06a55b98c1-74d2a5396914-JavaScript-IU-241.14494.240" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="9a77fab1-8cf5-4ab0-a036-a0b72fae0fb9" name="Changes" comment="" />
+      <created>1732970121603</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1732970121603</updated>
+      <workItem from="1732970123089" duration="826000" />
+      <workItem from="1732970959709" duration="18913000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+</project>
