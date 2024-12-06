@@ -13,7 +13,7 @@ class FirebaseConfig {
 
     @Bean
     fun firebaseApp(): FirebaseApp {
-        val serviceAccount = FileInputStream("src/main/resources/fir-mobileapp-6b7d4-firebase-adminsdk-go1g2-fd740ae3eb.json")
+        val serviceAccount = FileInputStream("src/main/resources/fir-mobileapp-6b7d4-firebase-adminsdk-go1g2-b8c1540d1b.json")
 
         val options = FirebaseOptions.builder()
             .setCredentials(GoogleCredentials.fromStream(serviceAccount))
