@@ -1,6 +1,6 @@
 package com.first.kotlin.kotlinDemo.rest
 
-import com.first.kotlin.kotlinDemo.employee.Employee
+import com.first.kotlin.kotlinDemo.domain.Employee
 import com.first.kotlin.kotlinDemo.service.EmployeeService
 import org.springframework.web.bind.annotation.*
 import org.springframework.http.HttpStatus
@@ -64,14 +64,12 @@ class EmployeeController(private val employeeService: EmployeeService) {
 
     @PostMapping("employee/profile/picture/{id}")
     fun uploadProfilePicture(
-        @PathVariable id: String,
-        @RequestParam file: MultipartFile
+        @PathVariable id: String, @RequestParam file: MultipartFile
     ): ResponseEntity<Map<String, String>> {
         return try {
             val message = employeeService.uploadProfilePicture(id, file)
             val responseBody = mapOf(
-                "message" to message,
-                "status" to HttpStatus.OK.reasonPhrase
+                "message" to message, "status" to HttpStatus.OK.reasonPhrase
             )
             ResponseEntity.status(HttpStatus.OK).body(responseBody)
         } catch (e: Exception) {
@@ -89,8 +87,7 @@ class EmployeeController(private val employeeService: EmployeeService) {
         return try {
             val base64Image = employeeService.getProfilePicture(id)
             val responseBody = mapOf(
-                "profilePicture" to base64Image,
-                "status" to HttpStatus.OK.reasonPhrase
+                "profilePicture" to base64Image, "status" to HttpStatus.OK.reasonPhrase
             )
             ResponseEntity.ok(responseBody)
         } catch (e: Exception) {

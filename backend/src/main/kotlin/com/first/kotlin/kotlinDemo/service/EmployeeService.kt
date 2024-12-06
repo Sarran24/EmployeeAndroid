@@ -1,6 +1,6 @@
 package com.first.kotlin.kotlinDemo.service
 
-import com.first.kotlin.kotlinDemo.employee.Employee
+import com.first.kotlin.kotlinDemo.domain.Employee
 import com.google.cloud.firestore.Firestore
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
@@ -42,7 +42,10 @@ class EmployeeService(private val firestore: Firestore) {
         }
         val employee = document.toObject(Employee::class.java)
         employee?.id = document.id
-        return employee ?: throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error parsing employee data")
+        return employee ?: throw ResponseStatusException(
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            "Error parsing employee data"
+        )
     }
 
     // Update employee by ID

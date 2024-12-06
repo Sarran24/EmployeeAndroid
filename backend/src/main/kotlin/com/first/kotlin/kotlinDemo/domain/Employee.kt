@@ -1,4 +1,4 @@
-package com.first.kotlin.kotlinDemo.employee
+package com.first.kotlin.kotlinDemo.domain
 
 import com.google.cloud.firestore.annotation.PropertyName
 
