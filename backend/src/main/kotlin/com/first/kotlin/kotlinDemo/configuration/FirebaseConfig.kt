@@ -7,14 +7,22 @@ import com.google.cloud.firestore.Firestore
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import java.io.FileInputStream
+import io.github.cdimascio.dotenv.Dotenv
+import java.io.ByteArrayInputStream
+import java.util.*
 
 @Configuration
 class FirebaseConfig {
 
     @Bean
     fun firebaseApp(): FirebaseApp {
-        val serviceAccount = FileInputStream("src/main/resources/fir-mobileapp-6b7d4-firebase-adminsdk-go1g2-b8c1540d1b.json")
 
+        val dotenv = Dotenv.load()
+        val serviceAccountKey = dotenv["FIREBASE_SERVICE_ACCOUNT_KEY"]
+
+        // Decode the base64 encoded Firebase service account key
+        val decodedJson = String(Base64.getDecoder().decode(serviceAccountKey))
+        val serviceAccount = ByteArrayInputStream(decodedJson.toByteArray())
         val options = FirebaseOptions.builder()
             .setCredentials(GoogleCredentials.fromStream(serviceAccount))
             .setDatabaseUrl("https://fir-mobileapp-6b7d4.firebaseio.com")
