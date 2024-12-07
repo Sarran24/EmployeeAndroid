@@ -68,7 +68,7 @@ class EmployeeService(private val firestore: Firestore) {
         return "Employee with ID: $id has been deactivated"
     }
 
-    fun uploadProfilePicture(id: String, base64: String): String {
+    fun uploadProfilePicture(id: String, base64: EmployeeDTO): String {
         val documentRef = firestore.collection(collection).document(id)
         val document = documentRef.get().get()
 
@@ -77,7 +77,7 @@ class EmployeeService(private val firestore: Firestore) {
         }
 
         // Update the `profilePicture` field in the Firestore document
-        val updateFuture = documentRef.update("profilePicture", base64)
+        val updateFuture = documentRef.update("profilePicture", base64.profilePicture)
         updateFuture.get()
         return "Profile picture uploaded successfully for Employee ID: $id"
     }
