@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ActivityIndicator, Image, TextInput, TouchableO
 import { getEmployee, uploadProfilePicture } from './api';
 import * as ImagePicker from 'expo-image-picker';
 import blankProfilePicture from '../assets/images/blank-profile-picture.png';
-import Icon from 'react-native-vector-icons/AntDesign'; 
+import Icon from 'react-native-vector-icons/AntDesign';
 
 const UpdateEmployeeScreen = ({ route }: { route: any }) => {
     const { employeeId } = route.params;
@@ -70,14 +70,19 @@ const UpdateEmployeeScreen = ({ route }: { route: any }) => {
         });
 
         if (!result.canceled && result.assets && result.assets.length > 0) {
-            // Set selected image URI if available
-            console.log(result)
-            setProfilePicture(result.assets[0].uri);
+            console.log(result.assets[0].uri)
+            const selectedImageUri = result.assets[0].uri;
+
+            // If the image URI is already base64-encoded, just upload it directly
+            try {
+                await uploadProfilePicture(employeeId, selectedImageUri); // Use the URI directly
+                setProfilePicture(selectedImageUri); // Update local state with the selected image URI
+            } catch (error) {
+                console.error("Error uploading profile picture:", error);
+            }
+        } else {
+            alert('You did not select any image.');
         }
-        // } else {
-        //     // Handle cancellation or no image selected
-        //     alert('You did not select any image.');
-        // }
     };
 
     // const handleImageSelect = async () => {
@@ -96,6 +101,7 @@ const UpdateEmployeeScreen = ({ route }: { route: any }) => {
     //     });
 
     //     if (!result.canceled && result.assets && result.assets.length > 0) {
+    //         console.log(result.assets[0].uri)
     //         const selectedImageUri = result.assets[0].uri;
 
     //         // If the image URI is already base64-encoded, just upload it directly
@@ -215,7 +221,7 @@ const styles = StyleSheet.create({
     },
     addIcon: {
         color: '#1e1e1e',
-        backgroundColor:'black',
+        backgroundColor: 'black',
         fontSize: 24,
         fontWeight: 'bold',
     },

@@ -145,6 +145,7 @@ export const uploadProfilePicture = async (
   id: string,
   base64Image: string
 ): Promise<void> => {
+  
   try {
     const response = await fetch(`${BASE_URL}/profile/picture/${id}`, {
       method: "POST",
@@ -152,7 +153,10 @@ export const uploadProfilePicture = async (
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ profilePicture: base64Image }),
+      
     });
+    const bodyTest = JSON.stringify({ profilePicture: base64Image });
+    console.log(bodyTest)
 
     if (!response.ok) {
       throw new Error(
