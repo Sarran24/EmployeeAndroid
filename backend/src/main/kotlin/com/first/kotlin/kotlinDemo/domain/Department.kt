@@ -1,13 +1,13 @@
 package com.first.kotlin.kotlinDemo.domain
+
 import com.google.cloud.firestore.annotation.PropertyName
 
-data class Department @JvmOverloads constructor(
+data class Department(
     @PropertyName("name") private var _name: String,
     @PropertyName("location") private var _location: String,
     @PropertyName("budget") private var _budget: Double,
     @PropertyName("isActive") private var _isActive: Boolean = true,
     @field:PropertyName("id") private var _id: String? = null
-
 ) {
     constructor() : this("", "", 0.0, true, null)
 

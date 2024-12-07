@@ -12,17 +12,6 @@ import org.springframework.web.multipart.MultipartFile
 @RequestMapping("/api")
 class EmployeeController(private val employeeService: EmployeeService) {
 
-    @GetMapping("/employees")
-    fun getAllEmployees(): ResponseEntity<ResponsePayload<List<Employee>>> {
-        val employees = employeeService.getAllEmployees()
-        val responseBody = ResponsePayload(
-            message = "Employees retrieved successfully",
-            status = HttpStatus.OK.reasonPhrase,
-            body = employees
-        )
-        return ResponseEntity.ok(responseBody)
-    }
-
     @PostMapping("/employee")
     fun createEmployee(@RequestBody employee: Employee): ResponseEntity<ResponsePayload<Map<String, String>>> {
         employeeService.createEmployee(employee)
@@ -32,6 +21,17 @@ class EmployeeController(private val employeeService: EmployeeService) {
             body = mapOf("status" to HttpStatus.CREATED.reasonPhrase)
         )
         return ResponseEntity.status(HttpStatus.CREATED).body(responseBody)
+    }
+
+    @GetMapping("/employees")
+    fun getAllEmployees(): ResponseEntity<ResponsePayload<List<Employee>>> {
+        val employees = employeeService.getAllEmployees()
+        val responseBody = ResponsePayload(
+            message = "Employees retrieved successfully",
+            status = HttpStatus.OK.reasonPhrase,
+            body = employees
+        )
+        return ResponseEntity.ok(responseBody)
     }
 
     @GetMapping("employee/{id}")
@@ -55,7 +55,10 @@ class EmployeeController(private val employeeService: EmployeeService) {
     }
 
     @PutMapping("employee/{id}")
-    fun updateEmployee(@PathVariable id: String, @RequestBody updatedEmployee: Employee): ResponseEntity<ResponsePayload<Map<String, String>>> {
+    fun updateEmployee(
+        @PathVariable id: String,
+        @RequestBody updatedEmployee: Employee
+    ): ResponseEntity<ResponsePayload<Map<String, String>>> {
         employeeService.updateEmployee(id, updatedEmployee)
         val responseBody = ResponsePayload(
             message = "Employee updated successfully",
@@ -77,7 +80,10 @@ class EmployeeController(private val employeeService: EmployeeService) {
     }
 
     @PostMapping("employee/profile/picture/{id}")
-    fun uploadProfilePicture(@PathVariable id: String, @RequestParam file: MultipartFile): ResponseEntity<ResponsePayload<Map<String, String>>> {
+    fun uploadProfilePicture(
+        @PathVariable id: String,
+        @RequestParam file: MultipartFile
+    ): ResponseEntity<ResponsePayload<Map<String, String>>> {
         return try {
             val message = employeeService.uploadProfilePicture(id, file)
             val responseBody = ResponsePayload(

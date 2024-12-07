@@ -7,10 +7,12 @@ data class Employee(
     @PropertyName("position") private var _position: String,
     @PropertyName("salary") private var _salary: Double,
     @PropertyName("profilePicture") private var _profilePicture: String,
-    @field:PropertyName("active") private var _isActive: Boolean = true,
+    @field:PropertyName("isActive") private var _isActive: Boolean = true,
+    @field:PropertyName("departmentId") private var _departmentId: String? = null,
+    @field:PropertyName("roleId") private var _roleId: String? = null,
     private var _id: String? = null
 ) {
-    constructor() : this("", "", 0.0, "", true, null)
+    constructor() : this("", "", 0.0, "", true, null, null, null)
 
     var name: String
         get() = _name
@@ -40,18 +42,27 @@ data class Employee(
             _isActive = value
         }
 
+    var departmentId: String?
+        get() = _departmentId
+        set(value) {
+            _departmentId = value
+        }
+
+    var roleId: String?
+        get() = _roleId
+        set(value) {
+            _roleId = value
+        }
+
     var id: String?
         get() = _id
         set(value) {
             _id = value
         }
+
     var profilePicture: String
         get() = _profilePicture
         set(value) {
             _profilePicture = value
         }
-
-    override fun toString(): String {
-        return "Employee(name='$_name', position='$_position', salary=$_salary, isActive=$_isActive, id=$_id)"
-    }
 }
