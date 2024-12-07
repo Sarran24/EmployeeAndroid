@@ -6,16 +6,22 @@ import {
     StyleSheet,
     TouchableOpacity,
     Alert,
+    Image,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { fetchEmployees, deleteEmployee } from './api';
 
+// Import the blank profile picture
+const blankProfilePicture = require('../assets/images/blank-profile-picture.png');
+
 interface Employee {
-    id: number;
+    id: string;
     name: string;
     position: string;
     salary: number;
+    profilePicture: string;
+    isActive: boolean;
 }
 
 const EmployeeList: React.FC<{ navigation: any }> = ({ navigation }) => {
@@ -28,11 +34,16 @@ const EmployeeList: React.FC<{ navigation: any }> = ({ navigation }) => {
         const loadEmployees = async () => {
             try {
                 const result = await fetchEmployees();
-                setEmployees(result);
-                setSortedEmployees(result); // Initial sorting
+                if (Array.isArray(result)) {
+                    setEmployees(result);
+                    setSortedEmployees(result);
+                } else {
+                    throw new Error('API did not return an array of employees');
+                }
             } catch (error) {
                 console.error('Error fetching employees:', error);
                 setError('Failed to load employees');
+                setEmployees([]);
             }
         };
 
@@ -61,9 +72,9 @@ const EmployeeList: React.FC<{ navigation: any }> = ({ navigation }) => {
         setSortedEmployees(sortedList);
     }, [sortOption, employees]);
 
-    const handleDeleteEmployee = async (id: number) => {
+    const handleDeleteEmployee = async (id: string) => {
         try {
-            await deleteEmployee(id);
+            await deleteEmployee(id.toString());
             setEmployees((prevEmployees) =>
                 prevEmployees.filter((employee) => employee.id !== id)
             );
@@ -81,14 +92,24 @@ const EmployeeList: React.FC<{ navigation: any }> = ({ navigation }) => {
                     navigation.navigate('UpdateEmployee', { employee: item })
                 }
             >
-                <Text style={styles.employeeName}>{item.name}</Text>
-                <Text>TestGit2</Text>
-                <Text style={styles.employeePosition}>
-                    Position: {item.position}
-                </Text>
-                <Text style={styles.employeeSalary}>
-                    Salary: ${item.salary.toLocaleString()}
-                </Text>
+                {/* Display profile picture with fallback */}
+                <Image
+                    source={
+                        item.profilePicture && item.profilePicture.trim() !== ''
+                            ? { uri: item.profilePicture }
+                            : blankProfilePicture
+                    }
+                    style={styles.profilePicture}
+                />
+                <View style={styles.employeeInfo}>
+                    <Text style={styles.employeeName}>{item.name}</Text>
+                    <Text style={styles.employeePosition}>
+                        Position: {item.position}
+                    </Text>
+                    <Text style={styles.employeeSalary}>
+                        Salary: ${item.salary.toLocaleString()}
+                    </Text>
+                </View>
             </TouchableOpacity>
             <TouchableOpacity
                 onPress={() => handleDeleteEmployee(item.id)}
@@ -122,7 +143,7 @@ const EmployeeList: React.FC<{ navigation: any }> = ({ navigation }) => {
             </View>
             <FlatList
                 data={sortedEmployees}
-                keyExtractor={(item) => item.id.toString()}
+                keyExtractor={(item) => item.id}
                 renderItem={renderEmployeeItem}
                 contentContainerStyle={styles.listContent}
                 ListEmptyComponent={
@@ -149,13 +170,19 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
+        elevation: 2, // Removing shadow for iOS, but still adds elevation for Android
     },
     employeeDetails: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    profilePicture: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        marginRight: 12,
+    },
+    employeeInfo: {
         flex: 1,
     },
     employeeName: {

@@ -1,24 +1,40 @@
-const BASE_URL = "http://localhost:8080/employees"; // Your backend API base URL
+const BASE_URL = "http://localhost:8080/api/employee"; // Your backend API base URL
+const EMPLOYEES_URL = "http://localhost:8080/api/employees"; // Separate URL for fetching all employees
 
 // Interface for Employee to ensure type safety
 interface Employee {
-  id?: string;
+  id: string;
   name: string;
   position: string;
   salary: number;
+  isActive: boolean;
+  profilePicture: string;
+  departmentId: string | null;
+  roleId: string | null;
 }
 
 /**
- * Fetch all employees
+ * Fetch all active employees
  * @returns {Promise<Employee[]>} - The list of employees
  */
-export const fetchEmployees = async () => {
+export const fetchEmployees = async (): Promise<Employee[]> => {
   try {
-    const response = await fetch(BASE_URL);
+    const response = await fetch(EMPLOYEES_URL); // Fetching from the separated endpoint
     if (!response.ok) {
       throw new Error(`Error fetching employees: ${response.statusText}`);
     }
-    return await response.json();
+
+    const data = await response.json();
+
+    // Check if the response has a 'body' property and filter out empty objects
+    const employees = data.body
+      ? data.body.filter(
+          (emp: Partial<Employee>) =>
+            emp.id && emp.name && emp.position !== undefined
+        )
+      : [];
+
+    return employees;
   } catch (error) {
     console.error("Error fetching employees:", error);
     throw error;
@@ -27,10 +43,10 @@ export const fetchEmployees = async () => {
 
 /**
  * Fetch a single employee by ID
- * @param {number} id - The ID of the employee to fetch
+ * @param {string} id - The ID of the employee to fetch (id is a string now)
  * @returns {Promise<Employee>} - The employee details
  */
-export const getEmployee = async (id: number) => {
+export const getEmployee = async (id: string): Promise<Employee> => {
   try {
     const response = await fetch(`${BASE_URL}/${id}`);
     if (!response.ok) {
@@ -48,10 +64,8 @@ export const getEmployee = async (id: number) => {
  * @param {Employee} data - The employee data to create
  * @returns {Promise<Employee>} - The created employee
  */
-export const createEmployee = async (data: Employee) => {
+export const createEmployee = async (data: Employee): Promise<Employee> => {
   try {
-    console.log("Sending payload to backend:", JSON.stringify(data)); // Log request payload
-
     const response = await fetch(BASE_URL, {
       method: "POST",
       headers: {
@@ -60,16 +74,11 @@ export const createEmployee = async (data: Employee) => {
       body: JSON.stringify(data),
     });
 
-    console.log("Response status:", response.status); // Log response status
-
-    const responseBody = await response.text();
-    console.log("Response body:", responseBody); // Log response body
-
     if (!response.ok) {
       throw new Error(`Error creating employee: ${response.statusText}`);
     }
 
-    return JSON.parse(responseBody); // Parse and return the JSON
+    return await response.json(); // Return the created employee
   } catch (error) {
     console.error("Error creating employee:", error);
     throw error;
@@ -78,11 +87,14 @@ export const createEmployee = async (data: Employee) => {
 
 /**
  * Update an existing employee
- * @param {number} id - The ID of the employee to update
+ * @param {string} id - The ID of the employee to update
  * @param {Employee} data - The updated employee data
  * @returns {Promise<Employee>} - The updated employee
  */
-export const updateEmployee = async (id: number, data: Employee) => {
+export const updateEmployee = async (
+  id: string,
+  data: Employee
+): Promise<Employee> => {
   try {
     const response = await fetch(`${BASE_URL}/${id}`, {
       method: "PUT",
@@ -95,6 +107,7 @@ export const updateEmployee = async (id: number, data: Employee) => {
     if (!response.ok) {
       throw new Error(`Error updating employee: ${response.statusText}`);
     }
+
     return await response.json();
   } catch (error) {
     console.error(`Error updating employee with id ${id}:`, error);
@@ -103,21 +116,73 @@ export const updateEmployee = async (id: number, data: Employee) => {
 };
 
 /**
- * Delete an employee
- * @param {number} id - The ID of the employee to delete
+ * Deactivate (soft delete) an employee
+ * @param {string} id - The ID of the employee to deactivate
  * @returns {Promise<void>}
  */
-export const deleteEmployee = async (id: number) => {
+export const deleteEmployee = async (id: string): Promise<void> => {
   try {
     const response = await fetch(`${BASE_URL}/${id}`, {
       method: "DELETE",
     });
 
     if (!response.ok) {
-      throw new Error(`Error deleting employee: ${response.statusText}`);
+      throw new Error(`Error deactivating employee: ${response.statusText}`);
     }
   } catch (error) {
-    console.error(`Error deleting employee with id ${id}:`, error);
+    console.error(`Error deactivating employee with id ${id}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Upload a profile picture for an employee
+ * @param {string} id - The ID of the employee
+ * @param {FormData} formData - The FormData object containing the file
+ * @returns {Promise<void>}
+ */
+export const uploadProfilePicture = async (
+  id: string,
+  formData: FormData
+): Promise<void> => {
+  try {
+    const response = await fetch(`${BASE_URL}/profile/picture/${id}`, {
+      method: "POST",
+      body: formData, // Sending form data directly for file upload
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Error uploading profile picture: ${response.statusText}`
+      );
+    }
+  } catch (error) {
+    console.error(
+      `Error uploading profile picture for employee with id ${id}:`,
+      error
+    );
+    throw error;
+  }
+};
+
+/**
+ * Get the profile picture of an employee
+ * @param {string} id - The ID of the employee
+ * @returns {Promise<string>} - The URL of the profile picture
+ */
+export const getProfilePicture = async (id: string): Promise<string> => {
+  try {
+    const response = await fetch(`${BASE_URL}/profile/picture/${id}`);
+    if (!response.ok) {
+      throw new Error(`Error fetching profile picture: ${response.statusText}`);
+    }
+    const pictureUrl = await response.text();
+    return pictureUrl; // Assuming the response is a URL for the image
+  } catch (error) {
+    console.error(
+      `Error fetching profile picture for employee with id ${id}:`,
+      error
+    );
     throw error;
   }
 };
@@ -129,4 +194,6 @@ export default {
   createEmployee,
   updateEmployee,
   deleteEmployee,
+  uploadProfilePicture,
+  getProfilePicture,
 };
