@@ -21,7 +21,7 @@ class DepartmentController(private val departmentService: DepartmentService) {
                 status = HttpStatus.OK.reasonPhrase,
                 body = activeDepartments
             )
-            ResponseEntity.ok(responseBody)  // Return the success response
+            ResponseEntity.ok(responseBody)
         } catch (e: Exception) {
             val errorResponse = ResponsePayload<List<Department>>(
                 message = e.message ?: "Unknown error",

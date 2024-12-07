@@ -6,10 +6,12 @@ class Employee(
     @PropertyName("name") private var _name: String,
     @PropertyName("position") private var _position: String,
     @PropertyName("salary") private var _salary: Double,
+    @PropertyName("profilePicture") private var _profilePicture: String,
     @field:PropertyName("active") private var _isActive: Boolean = true,
     private var _id: String? = null
 ) {
-    constructor() : this("", "", 0.0, true, null)
+    constructor() : this("", "", 0.0, "", true, null)
+
     var name: String
         get() = _name
         set(value) {
@@ -42,6 +44,11 @@ class Employee(
         get() = _id
         set(value) {
             _id = value
+        }
+    var profilePicture: String
+        get() = _profilePicture
+        set(value) {
+            _profilePicture = value
         }
 
     override fun toString(): String {
