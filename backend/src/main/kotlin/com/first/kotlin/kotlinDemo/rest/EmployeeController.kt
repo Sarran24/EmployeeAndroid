@@ -1,6 +1,7 @@
 package com.first.kotlin.kotlinDemo.rest
 
 import com.first.kotlin.kotlinDemo.domain.Employee
+import com.first.kotlin.kotlinDemo.dto.EmployeeDTO
 import com.first.kotlin.kotlinDemo.payload.ResponsePayload
 import com.first.kotlin.kotlinDemo.service.EmployeeService
 import org.springframework.web.bind.annotation.*
@@ -13,7 +14,7 @@ import org.springframework.web.multipart.MultipartFile
 class EmployeeController(private val employeeService: EmployeeService) {
 
     @PostMapping("/employee")
-    fun createEmployee(@RequestBody employee: Employee): ResponseEntity<ResponsePayload<Map<String, String>>> {
+    fun createEmployee(@RequestBody employee: EmployeeDTO): ResponseEntity<ResponsePayload<Map<String, String>>> {
         employeeService.createEmployee(employee)
         val responseBody = ResponsePayload(
             message = "Employee created successfully",
@@ -24,7 +25,7 @@ class EmployeeController(private val employeeService: EmployeeService) {
     }
 
     @GetMapping("/employees")
-    fun getAllEmployees(): ResponseEntity<ResponsePayload<List<Employee>>> {
+    fun getAllEmployees(): ResponseEntity<ResponsePayload<List<EmployeeDTO>>> {
         val employees = employeeService.getAllEmployees()
         val responseBody = ResponsePayload(
             message = "Employees retrieved successfully",
@@ -35,7 +36,7 @@ class EmployeeController(private val employeeService: EmployeeService) {
     }
 
     @GetMapping("employee/{id}")
-    fun getEmployeeById(@PathVariable id: String): ResponseEntity<ResponsePayload<Employee>> {
+    fun getEmployeeById(@PathVariable id: String): ResponseEntity<ResponsePayload<EmployeeDTO>> {
         val employee = employeeService.getEmployeeById(id)
         return if (employee != null) {
             val responseBody = ResponsePayload(
@@ -45,7 +46,7 @@ class EmployeeController(private val employeeService: EmployeeService) {
             )
             ResponseEntity.ok(responseBody)
         } else {
-            val errorResponse = ResponsePayload<Employee>(
+            val errorResponse = ResponsePayload<EmployeeDTO>(
                 message = "Employee not found",
                 status = HttpStatus.NOT_FOUND.reasonPhrase,
                 body = null
@@ -57,7 +58,7 @@ class EmployeeController(private val employeeService: EmployeeService) {
     @PutMapping("employee/{id}")
     fun updateEmployee(
         @PathVariable id: String,
-        @RequestBody updatedEmployee: Employee
+        @RequestBody updatedEmployee: EmployeeDTO
     ): ResponseEntity<ResponsePayload<Map<String, String>>> {
         employeeService.updateEmployee(id, updatedEmployee)
         val responseBody = ResponsePayload(
