@@ -1,119 +1,178 @@
-import React, { useState } from 'react';
-import {
-    View,
-    Text,
-    TextInput,
-    StyleSheet,
-    TouchableOpacity,
-    Alert,
-    Image
-} from 'react-native';
-import { updateEmployee } from './api';
-import { launchImageLibrary } from 'react-native-image-picker'; // Import image picker
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ActivityIndicator, Image, TextInput, TouchableOpacity } from 'react-native';
+import { getEmployee, uploadProfilePicture } from './api';
+import * as ImagePicker from 'expo-image-picker';
+import blankProfilePicture from '../assets/images/blank-profile-picture.png';
+import Icon from 'react-native-vector-icons/AntDesign'; 
 
-const UpdateEmployeeScreen: React.FC<{ route: any, navigation: any }> = ({ route, navigation }) => {
-    const { employee } = route.params;
-    const [name, setName] = useState(employee.name);
-    const [position, setPosition] = useState(employee.position);
-    const [salary, setSalary] = useState(employee.salary.toString());
-    const [profilePicture, setProfilePicture] = useState<string | null>(null); // State to store the selected image
+const UpdateEmployeeScreen = ({ route }: { route: any }) => {
+    const { employeeId } = route.params;
+    const [employee, setEmployee] = useState<any | null>(null);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [name, setName] = useState<string>('');
+    const [position, setPosition] = useState<string>('');
+    const [salary, setSalary] = useState<string>('');
+    const [profilePicture, setProfilePicture] = useState<string | null>(null);
 
-    const handleUpdateEmployee = async () => {
-        // Basic validation
-        if (!name || !position || !salary) {
-            Alert.alert('Error', 'Please fill in all fields');
+    useEffect(() => {
+        const fetchEmployeeDetails = async () => {
+            try {
+                const employeeData = await getEmployee(employeeId);
+                setEmployee(employeeData);
+                setName(employeeData.body.name);
+                setPosition(employeeData.body.position);
+                setSalary(employeeData.body.salary.toString());
+                setProfilePicture(employeeData.body.profilePicture || null);
+            } catch (error) {
+                console.error("Error fetching employee details:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchEmployeeDetails();
+    }, [employeeId]);
+
+
+    const handleSave = async () => {
+        // Save employee details along with the updated profile picture
+        try {
+            const updatedEmployeeData = {
+                name,
+                position,
+                salary,
+                profilePicture,
+            };
+
+            console.log("Saving employee data:", updatedEmployeeData);
+
+            // You can also send this data to your server to update the employee record.
+            // For example, you can use a POST request to update the employee details.
+
+        } catch (error) {
+            console.error("Error saving employee details:", error);
+        }
+    };
+
+    const handleImageSelect = async () => {
+        // Request permissions
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+            alert('Permission to access the gallery is required!');
             return;
         }
 
-        const formData = new FormData();
-        formData.append('name', name);
-        formData.append('position', position);
-        formData.append('salary', salary);
-
-        // If a profile picture is selected, append it to the FormData
-        if (profilePicture) {
-            const file = {
-                uri: profilePicture,
-                name: 'profile.jpg', // You can change the name as per your requirement
-                type: 'image/jpeg',
-            };
-            formData.append('profilePicture', file);
-        }
-
-        try {
-            const updatedEmployee = await updateEmployee(employee.id, formData);
-
-            Alert.alert('Success', 'Employee updated successfully', [
-                {
-                    text: 'OK',
-                    onPress: () => navigation.goBack(),
-                },
-            ]);
-        } catch (error) {
-            Alert.alert('Error', 'Failed to update employee');
-            console.error(error);
-        }
-    };
-
-    // Function to handle profile picture selection
-    const handleProfilePictureChange = () => {
-        launchImageLibrary({ mediaType: 'photo', quality: 0.5 }, (response) => {
-            if (response.didCancel) {
-                console.log('User canceled image picker');
-            } else if (response.errorMessage) {
-                console.error('Image Picker Error: ', response.errorMessage);
-            } else {
-                setProfilePicture(response.assets?.[0].uri || null); // Save the selected image URI
-            }
+        // Launch the image library
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'], // Correct mediaTypes usage
+            allowsEditing: true,
+            quality: 1,
         });
+
+        if (!result.canceled && result.assets && result.assets.length > 0) {
+            // Set selected image URI if available
+            console.log(result)
+            setProfilePicture(result.assets[0].uri);
+        }
+        // } else {
+        //     // Handle cancellation or no image selected
+        //     alert('You did not select any image.');
+        // }
     };
+
+    // const handleImageSelect = async () => {
+    //     // Request permissions
+    //     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    //     if (status !== 'granted') {
+    //         alert('Permission to access the gallery is required!');
+    //         return;
+    //     }
+
+    //     // Launch the image library
+    //     const result = await ImagePicker.launchImageLibraryAsync({
+    //         mediaTypes: ['images'],
+    //         allowsEditing: true,
+    //         quality: 1,
+    //     });
+
+    //     if (!result.canceled && result.assets && result.assets.length > 0) {
+    //         const selectedImageUri = result.assets[0].uri;
+
+    //         // If the image URI is already base64-encoded, just upload it directly
+    //         try {
+    //             await uploadProfilePicture(employeeId, selectedImageUri); // Use the URI directly
+    //             setProfilePicture(selectedImageUri); // Update local state with the selected image URI
+    //         } catch (error) {
+    //             console.error("Error uploading profile picture:", error);
+    //         }
+    //     } else {
+    //         alert('You did not select any image.');
+    //     }
+    // };
+
+
+    if (loading) {
+        return (
+            <View style={styles.container}>
+                <ActivityIndicator size="large" color="#007BFF" />
+                <Text>Loading...</Text>
+            </View>
+        );
+    }
+
+    if (!employee) {
+        return (
+            <View style={styles.container}>
+                <Text style={styles.errorText}>Employee not found.</Text>
+            </View>
+        );
+    }
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Update Employee</Text>
-
-            <TextInput
-                style={styles.input}
-                placeholder="Name"
-                value={name}
-                onChangeText={setName}
-            />
-
-            <TextInput
-                style={styles.input}
-                placeholder="Position"
-                value={position}
-                onChangeText={setPosition}
-            />
-
-            <TextInput
-                style={styles.input}
-                placeholder="Salary"
-                value={salary}
-                onChangeText={setSalary}
-                keyboardType="numeric"
-            />
-
-            {/* Display the selected profile picture */}
-            {profilePicture && (
+            {/* Profile Picture Section */}
+            <View style={styles.profilePictureContainer}>
                 <Image
-                    source={{ uri: profilePicture }}
+                    source={profilePicture ? { uri: profilePicture } : blankProfilePicture}
                     style={styles.profilePicture}
                 />
-            )}
+                <TouchableOpacity style={styles.addIconContainer} onPress={handleImageSelect}>
+                    {/* Use the camerao icon instead of + */}
+                    <Icon name="camerao" size={30} color="#fff" />
+                </TouchableOpacity>
+            </View>
 
-            <TouchableOpacity
-                style={styles.button}
-                onPress={handleProfilePictureChange} // Button to select a profile picture
-            >
-                <Text style={styles.buttonText}>Select Profile Picture</Text>
-            </TouchableOpacity>
+            {/* Name Input */}
+            <Text style={styles.label}>Name</Text>
+            <TextInput
+                value={name}
+                onChangeText={setName}
+                style={styles.input}
+                placeholder="Enter name"
+            />
 
-            <TouchableOpacity
-                style={styles.button}
-                onPress={handleUpdateEmployee}
-            >
-                <Text style={styles.buttonText}>Update Employee</Text>
+            {/* Position Input */}
+            <Text style={styles.label}>Position</Text>
+            <TextInput
+                value={position}
+                onChangeText={setPosition}
+                style={styles.input}
+                placeholder="Enter position"
+            />
+
+            {/* Salary Input */}
+            <Text style={styles.label}>Salary</Text>
+            <TextInput
+                value={salary}
+                onChangeText={setSalary}
+                style={styles.input}
+                keyboardType="numeric"
+                placeholder="Enter salary"
+            />
+
+            {/* Save Button */}
+            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+                <Text style={styles.saveButtonText}>Save</Text>
             </TouchableOpacity>
         </View>
     );
@@ -122,40 +181,71 @@ const UpdateEmployeeScreen: React.FC<{ route: any, navigation: any }> = ({ route
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 16,
-        backgroundColor: '#f5f5f5',
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 16,
-        textAlign: 'center',
-    },
-    input: {
-        backgroundColor: 'white',
-        borderWidth: 1,
-        borderColor: '#ddd',
-        borderRadius: 8,
-        padding: 12,
-        marginBottom: 12,
-    },
-    button: {
-        backgroundColor: 'blue',
-        padding: 15,
-        borderRadius: 8,
+        justifyContent: 'flex-start',
         alignItems: 'center',
-        marginBottom: 12,
+        padding: 16,
+        backgroundColor: '#f9f9f9',
     },
-    buttonText: {
-        color: 'white',
-        fontWeight: 'bold',
+    profilePictureContainer: {
+        position: 'relative',
+        marginBottom: 24,
     },
     profilePicture: {
         width: 100,
         height: 100,
         borderRadius: 50,
-        marginBottom: 12,
-        alignSelf: 'center',
+        borderWidth: 4,
+        borderColor: 'white',
+    },
+    label: {
+        fontSize: 16,
+        fontWeight: '500',
+        color: '#333',
+        marginTop: 12,
+        alignSelf: 'flex-start',
+        marginLeft: 16,
+    },
+    addIconContainer: {
+        position: 'absolute',
+        bottom: 0,
+        right: 0,
+        borderRadius: 20,
+        padding: 5,
+        elevation: 5,
+    },
+    addIcon: {
+        color: '#1e1e1e',
+        backgroundColor:'black',
+        fontSize: 24,
+        fontWeight: 'bold',
+    },
+    input: {
+        width: '90%',
+        height: 40,
+        borderColor: '#ddd',
+        borderWidth: 1,
+        borderRadius: 8,
+        marginVertical: 8,
+        paddingHorizontal: 10,
+        backgroundColor: '#fff',
+        fontSize: 16,
+    },
+    saveButton: {
+        marginTop: 20,
+        paddingVertical: 12,
+        paddingHorizontal: 24,
+        backgroundColor: '#0073fe',
+        borderRadius: 8,
+        alignItems: 'center',
+    },
+    saveButtonText: {
+        fontSize: 18,
+        color: '#fff',
+        fontWeight: '600',
+    },
+    errorText: {
+        fontSize: 18,
+        color: 'red',
     },
 });
 
