@@ -18,7 +18,7 @@ class RoleController(private val roleService: RoleService) {
         @RequestParam departmentId: String
     ): ResponseEntity<ResponsePayload<List<RoleDTO>>> {
         return try {
-            val createdRoles = roleService.createRoles(roles, departmentId) // Use the updated method
+            val createdRoles = roleService.createRoles(roles, departmentId)
             val responseBody = ResponsePayload(
                 message = "Roles created successfully",
                 status = HttpStatus.CREATED.reasonPhrase,
@@ -56,6 +56,69 @@ class RoleController(private val roleService: RoleService) {
         } catch (e: Exception) {
             val errorResponse = ResponsePayload<List<RoleDTO>>(
                 message = e.message ?: "Error retrieving roles",
+                status = HttpStatus.INTERNAL_SERVER_ERROR.reasonPhrase,
+                body = null
+            )
+            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse)
+        }
+    }
+
+    @PutMapping("/roles/{roleId}")
+    fun updateRole(
+        @PathVariable roleId: String,
+        @RequestBody updatedRoleDTO: RoleDTO
+    ): ResponseEntity<ResponsePayload<RoleDTO>> {
+        return try {
+            val updatedRole = roleService.updateRole(roleId, updatedRoleDTO)
+            val responseBody = ResponsePayload(
+                message = "Role updated successfully",
+                status = HttpStatus.OK.reasonPhrase,
+                body = updatedRole
+            )
+            ResponseEntity.status(HttpStatus.OK).body(responseBody)
+        } catch (e: Exception) {
+            val errorResponse = ResponsePayload<RoleDTO>(
+                message = e.message ?: "Error updating role",
+                status = HttpStatus.INTERNAL_SERVER_ERROR.reasonPhrase,
+                body = null
+            )
+            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse)
+        }
+    }
+
+    @DeleteMapping("/roles/{roleId}")
+    fun deleteRole(@PathVariable roleId: String): ResponseEntity<ResponsePayload<Void>> {
+        return try {
+            roleService.deleteRole(roleId)
+            val responseBody = ResponsePayload<Void>(
+                message = "Role deleted successfully",
+                status = HttpStatus.NO_CONTENT.reasonPhrase,
+                body = null
+            )
+            ResponseEntity.status(HttpStatus.NO_CONTENT).body(responseBody)
+        } catch (e: Exception) {
+            val errorResponse = ResponsePayload<Void>(
+                message = e.message ?: "Error deleting role",
+                status = HttpStatus.INTERNAL_SERVER_ERROR.reasonPhrase,
+                body = null
+            )
+            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse)
+        }
+    }
+
+    @GetMapping("/roles/{roleId}")
+    fun getRoleById(@PathVariable roleId: String): ResponseEntity<ResponsePayload<RoleDTO>> {
+        return try {
+            val role = roleService.getRoleById(roleId)
+            val responseBody = ResponsePayload(
+                message = "Role retrieved successfully",
+                status = HttpStatus.OK.reasonPhrase,
+                body = role
+            )
+            ResponseEntity.status(HttpStatus.OK).body(responseBody)
+        } catch (e: Exception) {
+            val errorResponse = ResponsePayload<RoleDTO>(
+                message = e.message ?: "Error retrieving role",
                 status = HttpStatus.INTERNAL_SERVER_ERROR.reasonPhrase,
                 body = null
             )
