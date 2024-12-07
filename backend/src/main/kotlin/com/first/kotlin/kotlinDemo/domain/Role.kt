@@ -5,9 +5,10 @@ import com.google.cloud.firestore.annotation.PropertyName
 data class Role(
     @PropertyName("name") private var _name: String,
     @PropertyName("description") private var _description: String,
-    @field:PropertyName("id") private var _id: String? = null
+    @field:PropertyName("id") private var _id: String? = null,
+    @PropertyName("departmentId") private var _departmentId: String
 ) {
-    constructor() : this("", "", null)
+    constructor() : this("", "", null, "")
 
     var name: String
         get() = _name
@@ -25,5 +26,11 @@ data class Role(
         get() = _id
         set(value) {
             _id = value
+        }
+
+    var departmentId: String
+        get() = _departmentId
+        set(value) {
+            _departmentId = value
         }
 }

@@ -1,5 +1,6 @@
 package com.first.kotlin.kotlinDemo.service
 
+import com.first.kotlin.kotlinDemo.Utility.DepartmentConstants
 import com.first.kotlin.kotlinDemo.domain.Department
 import com.first.kotlin.kotlinDemo.domain.Employee
 import org.springframework.beans.factory.annotation.Autowired
@@ -16,6 +17,38 @@ class DepartmentService(private val firestore: Firestore) {
 
     private val collection = "departments" // Firestore collection name for departments
 
+    @Service
+    class DepartmentService(private val firestore: Firestore) {
+
+        private val collection = "departments" // Firestore collection name for departments
+
+        // Function to create a new department with validation
+        fun createDepartment(department: Department): Department {
+            // Validate department name
+            if (department.name.isBlank()) {
+                throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Department name cannot be blank.")
+            }
+
+            // Ensure department name is valid using the constants from DepartmentConstants
+            if (department.name !in DepartmentConstants.VALID_DEPARTMENTS) {
+                throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid department name: ${department.name}.")
+            }
+
+            // If 'isActive' is not set, default it to true
+            if (department.isActive == null) {
+                department.isActive = true  // Set isActive to true by default
+            }
+
+            // Add the department to Firestore
+            val docRef = firestore.collection(collection).add(department).get()
+
+            // Set the generated document ID to the department
+            department.id = docRef.id
+
+            return department
+        }
+    }
+
     fun getActiveDepartments(): List<Department> {
         val documents = mutableListOf<Department>()
 
@@ -28,20 +61,6 @@ class DepartmentService(private val firestore: Firestore) {
             }
         }
         return documents
-    }
-
-
-    fun createDepartment(department: Department): Department {
-        // Ensure isActive is set to true by default
-        if (department.isActive == null) {
-            department.isActive = true  // Set isActive to true by default
-        }
-
-        // Add the department to Firestore
-        val docRef = firestore.collection(collection).add(department).get()
-        department.id = docRef.id  // Set the generated document ID to the department
-
-        return department
     }
 
 
