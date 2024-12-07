@@ -52,19 +52,22 @@ class DepartmentService(private val firestore: Firestore, private val roleServic
         }
     }
 
-    fun getActiveDepartments(): List<Department> {
-        val documents = mutableListOf<Department>()
+    fun getActiveDepartments(): List<DepartmentDTO> {
+        val documents = mutableListOf<DepartmentDTO>()
 
         val querySnapshot = firestore.collection(collection).get().get()
         for (document in querySnapshot.documents) {
             val department = document.toObject(Department::class.java)
             if (department?.isActive == true) {
                 department.id = document.id
-                documents.add(department)
+                val roles = roleService.getRolesByDepartmentId(department.id ?: "")
+                documents.add(DepartmentMapper.toDTO(department, roles))
             }
         }
         return documents
     }
+
+
 
     fun getDepartmentById(id: String): DepartmentDTO {
         val doc = firestore.collection(collection).document(id).get().get()
@@ -81,24 +84,23 @@ class DepartmentService(private val firestore: Firestore, private val roleServic
         }
     }
 
-    fun updateDepartment(id: String, updatedDepartment: Department): Department {
-        val docRef = firestore.collection(collection).document(id)
-        updatedDepartment.id = id
+    fun updateDepartment(updatedDepartmentDTO: DepartmentDTO): DepartmentDTO {
+        val departmentId = updatedDepartmentDTO.id
+            ?: throw IllegalArgumentException("Department ID must not be null for update operation.")
+        val docRef = firestore.collection(collection).document(departmentId)
+        val updatedDepartment = DepartmentMapper.toEntity(updatedDepartmentDTO)
         docRef.set(updatedDepartment).get()
-        return updatedDepartment
+        return DepartmentMapper.toDTO(updatedDepartment, updatedDepartmentDTO.roles)
     }
+
+
 
     fun softDeleteDepartment(id: String) {
         val docRef = firestore.collection(collection).document(id)
-
-        // Check if the department exists before performing the soft delete
         val document = docRef.get().get()
-
         if (!document.exists()) {
             throw IllegalArgumentException("Department not found")
         }
-
-        // Mark the department as inactive
         docRef.update("isActive", false).get()
     }
 }

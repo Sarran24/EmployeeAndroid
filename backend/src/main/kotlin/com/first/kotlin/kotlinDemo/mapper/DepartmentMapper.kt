@@ -15,4 +15,14 @@ object DepartmentMapper {
             roles = roles
         )
     }
+
+    fun toEntity(departmentDTO: DepartmentDTO): Department {
+        return Department(
+            id = departmentDTO.id,
+            name = departmentDTO.name,
+            location = departmentDTO.location,
+            budget = departmentDTO.budget,
+            isActive = departmentDTO.isActive
+        )
+    }
 }

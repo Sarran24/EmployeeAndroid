@@ -14,7 +14,7 @@ import org.springframework.web.server.ResponseStatusException
 class DepartmentController(private val departmentService: DepartmentService) {
 
     @GetMapping("/departments")
-    fun getAllActiveDepartments(): ResponseEntity<ResponsePayload<List<Department>>> {
+    fun getAllActiveDepartments(): ResponseEntity<ResponsePayload<List<DepartmentDTO>>> {
         return try {
             val activeDepartments = departmentService.getActiveDepartments()
             val responseBody = ResponsePayload(
@@ -24,7 +24,7 @@ class DepartmentController(private val departmentService: DepartmentService) {
             )
             ResponseEntity.ok(responseBody)
         } catch (e: Exception) {
-            val errorResponse = ResponsePayload<List<Department>>(
+            val errorResponse = ResponsePayload<List<DepartmentDTO>>(
                 message = e.message ?: "Unknown error",
                 status = HttpStatus.INTERNAL_SERVER_ERROR.reasonPhrase,
                 body = null
@@ -82,18 +82,18 @@ class DepartmentController(private val departmentService: DepartmentService) {
         }
     }
 
-    @PutMapping("/department/{id}")
+    @PutMapping("/department")
     fun updateDepartment(
-        @PathVariable id: String, @RequestBody updatedDepartment: Department
-    ): ResponseEntity<ResponsePayload<Department>> {
+        @PathVariable id: String, @RequestBody updatedDepartment: DepartmentDTO
+    ): ResponseEntity<ResponsePayload<DepartmentDTO>> {
         return try {
-            val updatedDept = departmentService.updateDepartment(id, updatedDepartment)
+            val updatedDept = departmentService.updateDepartment(updatedDepartment)
             val responseBody = ResponsePayload(
                 message = "Department updated successfully", status = HttpStatus.OK.reasonPhrase, body = updatedDept
             )
             ResponseEntity.ok(responseBody)
         } catch (e: Exception) {
-            val errorResponse = ResponsePayload<Department>(
+            val errorResponse = ResponsePayload<DepartmentDTO>(
                 message = e.message ?: "Unknown error",
                 status = HttpStatus.INTERNAL_SERVER_ERROR.reasonPhrase,
                 body = null
