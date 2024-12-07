@@ -2,34 +2,54 @@ package com.first.kotlin.kotlinDemo.service
 
 import com.first.kotlin.kotlinDemo.Utility.DepartmentConstants
 import com.first.kotlin.kotlinDemo.domain.Department
+import com.first.kotlin.kotlinDemo.dto.DepartmentDTO
+import com.first.kotlin.kotlinDemo.exception.InvalidRequestException
+import com.first.kotlin.kotlinDemo.mapper.DepartmentMapper
 import com.google.cloud.firestore.Firestore
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
 import org.springframework.http.HttpStatus
 
 @Service
-class DepartmentService(private val firestore: Firestore) {
+class DepartmentService(private val firestore: Firestore, private val roleService: RoleService) {
 
     private val collection = "departments"
 
-    fun createDepartment(department: Department): Department {
-        if (department.name.isBlank()) {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Department name cannot be blank.")
+    fun createDepartments(departments: List<Department>): List<Map<String, String>> {
+        val invalidDepartments =
+            departments.filter { it.name !in DepartmentConstants.VALID_DEPARTMENTS }.map { it.name }
+
+        if (invalidDepartments.isNotEmpty()) {
+            throw InvalidRequestException("Invalid departments: ${invalidDepartments.joinToString(", ")}")
         }
 
-        if (department.name !in DepartmentConstants.VALID_DEPARTMENTS) {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid department name: ${department.name}.")
+        val existingDepartmentsMap = firestore.collection(collection).get().get().documents.mapNotNull {
+            it.toObject(
+                Department::class.java
+            )?.name to it.id
+        }.toMap()
+
+        val newDepartments = departments.filter { it.name !in existingDepartmentsMap.keys }
+
+        if (newDepartments.isEmpty()) {
+            throw InvalidRequestException("All departments already exist in the database.")
         }
+        return newDepartments.map { department ->
+            if (department.isActive == null) {
+                department.isActive = true
+            }
 
-        if (department.isActive == null) {
-            department.isActive = true
+            val document = firestore.collection(collection).document()
+            document.set(department).get()
+
+            mapOf(
+                "id" to document.id,
+                "name" to department.name,
+                "location" to department.location,
+                "budget" to department.budget.toString(),
+                "isActive" to department.isActive.toString()
+            )
         }
-
-        val docRef = firestore.collection(collection).add(department).get()
-
-        department.id = docRef.id
-
-        return department
     }
 
     fun getActiveDepartments(): List<Department> {
@@ -46,11 +66,16 @@ class DepartmentService(private val firestore: Firestore) {
         return documents
     }
 
-    fun getDepartmentById(id: String): Department {
+    fun getDepartmentById(id: String): DepartmentDTO {
         val doc = firestore.collection(collection).document(id).get().get()
+
         return if (doc.exists()) {
-            doc.toObject(Department::class.java)?.apply { this.id = doc.id }
+            val department = doc.toObject(Department::class.java)?.apply { this.id = doc.id }
                 ?: throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error mapping department object")
+
+            val roles = roleService.getRolesByDepartmentId(department.id ?: "")
+
+            DepartmentMapper.toDTO(department, roles)
         } else {
             throw ResponseStatusException(HttpStatus.NOT_FOUND, "Department with ID $id not found")
         }

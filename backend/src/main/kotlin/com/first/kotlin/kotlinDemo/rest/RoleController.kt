@@ -1,37 +1,39 @@
 package com.first.kotlin.kotlinDemo.rest
 
-import com.first.kotlin.kotlinDemo.domain.Role
+import com.first.kotlin.kotlinDemo.dto.RoleDTO
 import com.first.kotlin.kotlinDemo.exception.InvalidRequestException
 import com.first.kotlin.kotlinDemo.service.RoleService
 import com.first.kotlin.kotlinDemo.payload.ResponsePayload
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.server.ResponseStatusException
 
 @RestController
 @RequestMapping("/api")
 class RoleController(private val roleService: RoleService) {
 
     @PostMapping("/roles")
-    fun createRoles(@RequestBody roles: List<Role>): ResponseEntity<ResponsePayload<List<Map<String, String>>>> {
+    fun createRoles(
+        @RequestBody roles: List<RoleDTO>,
+        @RequestParam departmentId: String
+    ): ResponseEntity<ResponsePayload<List<RoleDTO>>> {
         return try {
-            val createdRoleIds = roleService.createRoles(roles)
+            val createdRoles = roleService.createRoles(roles, departmentId) // Use the updated method
             val responseBody = ResponsePayload(
                 message = "Roles created successfully",
                 status = HttpStatus.CREATED.reasonPhrase,
-                body = createdRoleIds
+                body = createdRoles
             )
             ResponseEntity.status(HttpStatus.CREATED).body(responseBody)
         } catch (e: InvalidRequestException) {
-            val errorResponse = ResponsePayload<List<Map<String, String>>>(
+            val errorResponse = ResponsePayload<List<RoleDTO>>(
                 message = e.message ?: "Invalid roles provided",
                 status = HttpStatus.BAD_REQUEST.reasonPhrase,
                 body = null
             )
             ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse)
         } catch (e: Exception) {
-            val errorResponse = ResponsePayload<List<Map<String, String>>>(
+            val errorResponse = ResponsePayload<List<RoleDTO>>(
                 message = e.message ?: "Unknown error",
                 status = HttpStatus.INTERNAL_SERVER_ERROR.reasonPhrase,
                 body = null
@@ -41,31 +43,23 @@ class RoleController(private val roleService: RoleService) {
     }
 
 
-//    @GetMapping("/roles/{id}")
-//    fun getRoleById(@PathVariable id: String): ResponseEntity<ResponsePayload<Role>> {
-//        return try {
-//            // Assuming that the RoleService provides a method to get a role by its ID
-//            val role = roleService.getRoleById(id)
-//            val responseBody = ResponsePayload(
-//                message = "Role retrieved successfully",
-//                status = HttpStatus.OK.reasonPhrase,
-//                body = role
-//            )
-//            ResponseEntity.ok(responseBody)
-//        } catch (e: ResponseStatusException) {
-//            val errorResponse = ResponsePayload<Role>(
-//                message = e.message ?: "Role not found",
-//                status = e.statusCode.toString(),
-//                body = null
-//            )
-//            ResponseEntity.status(e.statusCode).body(errorResponse)
-//        } catch (e: Exception) {
-//            val errorResponse = ResponsePayload<Role>(
-//                message = e.message ?: "Unknown error",
-//                status = HttpStatus.INTERNAL_SERVER_ERROR.reasonPhrase,
-//                body = null
-//            )
-//            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse)
-//        }
-//    }
+    @GetMapping("roles/department")
+    fun getRolesByDepartmentId(@RequestParam departmentId: String): ResponseEntity<ResponsePayload<List<RoleDTO>>> {
+        return try {
+            val roles = roleService.getRolesByDepartmentId(departmentId)
+            val responseBody = ResponsePayload(
+                message = "Roles retrieved successfully",
+                status = HttpStatus.OK.reasonPhrase,
+                body = roles
+            )
+            ResponseEntity.status(HttpStatus.OK).body(responseBody)
+        } catch (e: Exception) {
+            val errorResponse = ResponsePayload<List<RoleDTO>>(
+                message = e.message ?: "Error retrieving roles",
+                status = HttpStatus.INTERNAL_SERVER_ERROR.reasonPhrase,
+                body = null
+            )
+            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse)
+        }
+    }
 }

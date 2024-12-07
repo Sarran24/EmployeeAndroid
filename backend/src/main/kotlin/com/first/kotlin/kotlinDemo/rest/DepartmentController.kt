@@ -1,6 +1,7 @@
 package com.first.kotlin.kotlinDemo.rest
 
 import com.first.kotlin.kotlinDemo.domain.Department
+import com.first.kotlin.kotlinDemo.dto.DepartmentDTO
 import com.first.kotlin.kotlinDemo.payload.ResponsePayload
 import com.first.kotlin.kotlinDemo.service.DepartmentService
 import org.springframework.http.HttpStatus
@@ -33,18 +34,20 @@ class DepartmentController(private val departmentService: DepartmentService) {
     }
 
 
-    @PostMapping("/department")
-    fun createDepartment(@RequestBody department: Department): ResponseEntity<ResponsePayload<Department>> {
+    @PostMapping("/departments")
+    fun createDepartments(@RequestBody departments: List<Department>): ResponseEntity<ResponsePayload<List<Map<String, String>>>> {
         return try {
-            val createdDepartment = departmentService.createDepartment(department)
+            val createdDepartments = departmentService.createDepartments(departments)
+
             val responseBody = ResponsePayload(
-                message = "Department created successfully",
+                message = "Departments created successfully",
                 status = HttpStatus.CREATED.reasonPhrase,
-                body = createdDepartment
+                body = createdDepartments
             )
+
             ResponseEntity.status(HttpStatus.CREATED).body(responseBody)
         } catch (e: Exception) {
-            val errorResponse = ResponsePayload<Department>(
+            val errorResponse = ResponsePayload<List<Map<String, String>>>(
                 message = e.message ?: "Unknown error",
                 status = HttpStatus.INTERNAL_SERVER_ERROR.reasonPhrase,
                 body = null
@@ -53,8 +56,9 @@ class DepartmentController(private val departmentService: DepartmentService) {
         }
     }
 
+
     @GetMapping("/department/{id}")
-    fun getDepartmentById(@PathVariable id: String): ResponseEntity<ResponsePayload<Department>> {
+    fun getDepartmentById(@PathVariable id: String): ResponseEntity<ResponsePayload<DepartmentDTO>> {
         return try {
             val department = departmentService.getDepartmentById(id)
             val responseBody = ResponsePayload(
@@ -64,12 +68,12 @@ class DepartmentController(private val departmentService: DepartmentService) {
             )
             ResponseEntity.ok(responseBody)
         } catch (e: ResponseStatusException) {
-            val errorResponse = ResponsePayload<Department>(
+            val errorResponse = ResponsePayload<DepartmentDTO>(
                 message = e.message ?: "Department not found", status = e.statusCode.toString(), body = null
             )
             ResponseEntity.status(e.statusCode).body(errorResponse)
         } catch (e: Exception) {
-            val errorResponse = ResponsePayload<Department>(
+            val errorResponse = ResponsePayload<DepartmentDTO>(
                 message = e.message ?: "Unknown error",
                 status = HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
                 body = null
