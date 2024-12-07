@@ -11,7 +11,6 @@ data class Department @JvmOverloads constructor(
 ) {
     constructor() : this("", "", 0.0, true, null)
 
-    // Public getter and setter methods for encapsulation
     var name: String
         get() = _name
         set(value) {

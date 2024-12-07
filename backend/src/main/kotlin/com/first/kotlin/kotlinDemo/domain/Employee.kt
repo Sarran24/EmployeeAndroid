@@ -2,7 +2,7 @@ package com.first.kotlin.kotlinDemo.domain
 
 import com.google.cloud.firestore.annotation.PropertyName
 
-class Employee(
+data class Employee(
     @PropertyName("name") private var _name: String,
     @PropertyName("position") private var _position: String,
     @PropertyName("salary") private var _salary: Double,
