@@ -76,11 +76,25 @@ class EmployeeService(private val firestore: Firestore) {
             throw ResponseStatusException(HttpStatus.NOT_FOUND, "Employee not found")
         }
 
-        // Update the `profilePicture` field in the Firestore document
-        val updateFuture = documentRef.update("profilePicture", base64)
+        // Extract the actual base64 string if it is wrapped in a JSON-like structure
+        val cleanedBase64 = if (base64.startsWith("{") && base64.contains("\"profilePicture\":")) {
+            // Extract the part after "profilePicture" key
+            val regex = Regex("\"profilePicture\"\\s*:\\s*\"(.*?)\"")
+            regex.find(base64)?.groups?.get(1)?.value ?: throw ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Invalid profilePicture format"
+            )
+        } else {
+            base64 // If it's already a clean base64 string
+        }.replace("\r", "").replace("\n", "").trim()
+
+        // Save the cleaned base64 string
+        val updateFuture = documentRef.update("profilePicture", cleanedBase64)
         updateFuture.get()
+
         return "Profile picture uploaded successfully for Employee ID: $id"
     }
+
 
 
     fun getProfilePicture(id: String): String {
