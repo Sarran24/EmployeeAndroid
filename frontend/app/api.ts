@@ -1,5 +1,5 @@
-const BASE_URL = "http://localhost:8080/api/employee"; // Your backend API base URL
-const EMPLOYEES_URL = "http://localhost:8080/api/employees"; // Separate URL for fetching all employees
+const BASE_URL = "http://192.168.1.11:8080/api/employee"; // Your backend API base URL
+const EMPLOYEES_URL = "http://192.168.1.11:8080/api/employees"; // Separate URL for fetching all employees
 
 // Interface for Employee to ensure type safety
 interface Employee {
@@ -143,12 +143,15 @@ export const deleteEmployee = async (id: string): Promise<void> => {
  */
 export const uploadProfilePicture = async (
   id: string,
-  formData: FormData
+  base64Image: string
 ): Promise<void> => {
   try {
     const response = await fetch(`${BASE_URL}/profile/picture/${id}`, {
       method: "POST",
-      body: formData, // Sending form data directly for file upload
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ profilePicture: base64Image }),
     });
 
     if (!response.ok) {

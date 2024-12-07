@@ -89,7 +89,7 @@ const EmployeeList: React.FC<{ navigation: any }> = ({ navigation }) => {
             <TouchableOpacity
                 style={styles.employeeDetails}
                 onPress={() =>
-                    navigation.navigate('UpdateEmployee', { employee: item })
+                    navigation.navigate('UpdateEmployee', { employeeId: item.id })
                 }
             >
                 {/* Display profile picture with fallback */}
@@ -110,13 +110,14 @@ const EmployeeList: React.FC<{ navigation: any }> = ({ navigation }) => {
                         Salary: ${item.salary.toLocaleString()}
                     </Text>
                 </View>
+                <TouchableOpacity
+                    onPress={() => handleDeleteEmployee(item.id)}
+                    style={styles.deleteButton}
+                >
+                    <Icon name="trash" size={20} color="#FF6347" />
+                </TouchableOpacity>
             </TouchableOpacity>
-            <TouchableOpacity
-                onPress={() => handleDeleteEmployee(item.id)}
-                style={styles.deleteButton}
-            >
-                <Icon name="trash" size={24} color="#FF6347" />
-            </TouchableOpacity>
+
         </View>
     );
 
@@ -205,7 +206,7 @@ const styles = StyleSheet.create({
         padding: 8,
     },
     deleteButton: {
-        marginLeft: 16,
+        marginRight: 20,
     },
     errorContainer: {
         flex: 1,
