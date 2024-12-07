@@ -83,7 +83,7 @@ class EmployeeController(private val employeeService: EmployeeService) {
     @PostMapping("employee/profile/picture/{id}")
     fun uploadProfilePicture(
         @PathVariable id: String,
-        @RequestBody profilePicture: EmployeeDTO
+        @RequestBody profilePicture: String
     ): ResponseEntity<ResponsePayload<Map<String, String>>> {
         return try {
             val message = employeeService.uploadProfilePicture(id, profilePicture)
