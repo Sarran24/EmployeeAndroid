@@ -3,6 +3,7 @@ package com.first.kotlin.kotlinDemo.domain
 import com.google.cloud.firestore.annotation.PropertyName
 
 data class Department(
+
     @PropertyName("name") private var _name: String,
     @PropertyName("location") private var _location: String,
     @PropertyName("budget") private var _budget: Double,
