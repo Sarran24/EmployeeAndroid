@@ -68,18 +68,20 @@ class EmployeeService(private val firestore: Firestore) {
         return "Employee with ID: $id has been deactivated"
     }
 
-    fun uploadProfilePicture(id: String, file: MultipartFile): String {
+    fun uploadProfilePicture(id: String, base64: String): String {
         val documentRef = firestore.collection(collection).document(id)
         val document = documentRef.get().get()
+
         if (!document.exists()) {
             throw ResponseStatusException(HttpStatus.NOT_FOUND, "Employee not found")
         }
 
-        val base64Image = "data:image/jpeg;base64," + Base64.getEncoder().encodeToString(file.bytes)
-        documentRef.update("profilePicture", base64Image).get()
-
+        // Update the `profilePicture` field in the Firestore document
+        val updateFuture = documentRef.update("profilePicture", base64)
+        updateFuture.get()
         return "Profile picture uploaded successfully for Employee ID: $id"
     }
+
 
     fun getProfilePicture(id: String): String {
         val documentRef = firestore.collection(collection).document(id)
