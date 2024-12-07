@@ -13,6 +13,7 @@ const UpdateEmployeeScreen = ({ route }: { route: any }) => {
     const [position, setPosition] = useState<string>('');
     const [salary, setSalary] = useState<string>('');
     const [profilePicture, setProfilePicture] = useState<string | null>(null);
+    console.log('Test')
 
     useEffect(() => {
         const fetchEmployeeDetails = async () => {
