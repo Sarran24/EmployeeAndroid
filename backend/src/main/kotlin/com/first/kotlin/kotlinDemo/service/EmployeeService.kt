@@ -1,8 +1,10 @@
 package com.first.kotlin.kotlinDemo.service
 
 import com.first.kotlin.kotlinDemo.domain.Employee
+import com.first.kotlin.kotlinDemo.domain.Role
 import com.first.kotlin.kotlinDemo.dto.EmployeeDTO
 import com.first.kotlin.kotlinDemo.mapper.EmployeeMapper
+import com.first.kotlin.kotlinDemo.mapper.RoleMapper
 import com.google.cloud.firestore.Firestore
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -31,18 +33,25 @@ class EmployeeService(private val firestore: Firestore) {
 
     fun createEmployee(employeeDTO: EmployeeDTO): String {
         val employee = EmployeeMapper.toEntity(employeeDTO)
+
+        employee.isActive = true
+
         val document = firestore.collection(collection).document()
         document.set(employee).get()
+
         return "Employee added with ID: ${document.id}"
     }
+
 
     fun getEmployeeById(id: String): EmployeeDTO {
         val document = firestore.collection(collection).document(id).get().get()
         if (!document.exists()) {
             throw ResponseStatusException(HttpStatus.NOT_FOUND, "Employee not found")
         }
-        val employee = document.toObject(Employee::class.java)
-            ?: throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error parsing employee data")
+        val employee = document.toObject(Employee::class.java) ?: throw ResponseStatusException(
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            "Error parsing employee data"
+        )
         employee.id = document.id
         return EmployeeMapper.toDTO(employee)
     }
@@ -76,25 +85,20 @@ class EmployeeService(private val firestore: Firestore) {
             throw ResponseStatusException(HttpStatus.NOT_FOUND, "Employee not found")
         }
 
-        // Extract the actual base64 string if it is wrapped in a JSON-like structure
         val cleanedBase64 = if (base64.startsWith("{") && base64.contains("\"profilePicture\":")) {
-            // Extract the part after "profilePicture" key
             val regex = Regex("\"profilePicture\"\\s*:\\s*\"(.*?)\"")
             regex.find(base64)?.groups?.get(1)?.value ?: throw ResponseStatusException(
-                HttpStatus.BAD_REQUEST,
-                "Invalid profilePicture format"
+                HttpStatus.BAD_REQUEST, "Invalid profilePicture format"
             )
         } else {
-            base64 // If it's already a clean base64 string
+            base64
         }.replace("\r", "").replace("\n", "").trim()
 
-        // Save the cleaned base64 string
         val updateFuture = documentRef.update("profilePicture", cleanedBase64)
         updateFuture.get()
 
         return "Profile picture uploaded successfully for Employee ID: $id"
     }
-
 
 
     fun getProfilePicture(id: String): String {
@@ -104,7 +108,21 @@ class EmployeeService(private val firestore: Firestore) {
             throw ResponseStatusException(HttpStatus.NOT_FOUND, "Employee not found")
         }
 
-        return document.getString("profilePicture")
-            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Profile picture not found")
+        return document.getString("profilePicture") ?: throw ResponseStatusException(
+            HttpStatus.NOT_FOUND,
+            "Profile picture not found"
+        )
+    }
+
+    fun getEmployeesByDepartmentId(departmentId: String): List<EmployeeDTO> {
+        val roles =
+            firestore.collection(collection).whereEqualTo("departmentId", departmentId).whereEqualTo("active", true)
+                .get()
+                .get().documents.mapNotNull { document ->
+                    document.toObject(Employee::class.java)?.copy(id = document.id)
+                }
+
+        return roles.map(EmployeeMapper::toDTO)
+
     }
 }

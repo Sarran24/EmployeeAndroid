@@ -11,7 +11,11 @@ import org.springframework.web.server.ResponseStatusException
 import org.springframework.http.HttpStatus
 
 @Service
-class DepartmentService(private val firestore: Firestore, private val roleService: RoleService) {
+class DepartmentService(
+    private val firestore: Firestore,
+    private val roleService: RoleService,
+    private val employeeService: EmployeeService
+) {
 
     private val collection = "departments"
 
@@ -61,12 +65,12 @@ class DepartmentService(private val firestore: Firestore, private val roleServic
             if (department?.isActive == true) {
                 department.id = document.id
                 val roles = roleService.getRolesByDepartmentId(department.id ?: "")
-                documents.add(DepartmentMapper.toDTO(department, roles))
+                val employees = employeeService.getEmployeesByDepartmentId(department.id ?: "")
+                documents.add(DepartmentMapper.toDTO(department, roles, employees))
             }
         }
         return documents
     }
-
 
 
     fun getDepartmentById(id: String): DepartmentDTO {
@@ -77,8 +81,8 @@ class DepartmentService(private val firestore: Firestore, private val roleServic
                 ?: throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error mapping department object")
 
             val roles = roleService.getRolesByDepartmentId(department.id ?: "")
-
-            DepartmentMapper.toDTO(department, roles)
+            val employee = employeeService.getEmployeesByDepartmentId(department.id ?: "")
+            DepartmentMapper.toDTO(department, roles, employee)
         } else {
             throw ResponseStatusException(HttpStatus.NOT_FOUND, "Department with ID $id not found")
         }
@@ -90,9 +94,8 @@ class DepartmentService(private val firestore: Firestore, private val roleServic
         val docRef = firestore.collection(collection).document(departmentId)
         val updatedDepartment = DepartmentMapper.toEntity(updatedDepartmentDTO)
         docRef.set(updatedDepartment).get()
-        return DepartmentMapper.toDTO(updatedDepartment, updatedDepartmentDTO.roles)
+        return DepartmentMapper.toDTO(updatedDepartment, updatedDepartmentDTO.roles, updatedDepartmentDTO.employees)
     }
-
 
 
     fun softDeleteDepartment(id: String) {

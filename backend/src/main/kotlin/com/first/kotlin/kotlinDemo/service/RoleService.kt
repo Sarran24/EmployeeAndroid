@@ -32,6 +32,7 @@ class RoleService(private val firestore: Firestore) {
 
         return newRoles.map { dto ->
             val role = RoleMapper.toEntity(dto, departmentId)
+            role.isActive = true
             val document = firestore.collection(collection).document()
             document.set(role).get()
 
@@ -42,6 +43,7 @@ class RoleService(private val firestore: Firestore) {
     fun getRolesByDepartmentId(departmentId: String): List<RoleDTO> {
         val roles = firestore.collection(collection)
             .whereEqualTo("departmentId", departmentId)
+            .whereEqualTo("isActive", true)
             .get()
             .get()
             .documents

@@ -6,5 +6,6 @@ data class DepartmentDTO(
     val location: String,
     val budget: Double,
     val isActive: Boolean,
-    val roles: List<RoleDTO> = emptyList()
+    val roles: List<RoleDTO> = emptyList(),
+    val employees:List<EmployeeDTO> = emptyList()
 )
