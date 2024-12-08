@@ -1,6 +1,5 @@
-const BASE_URL = "http://192.168.1.11:8080/api/employee"; // Your backend API base URL
-const EMPLOYEES_URL = "http://192.168.1.11:8080/api/employees"; // Separate URL for fetching all employees
-
+const BASE_URL = "http://192.168.1.15:8080/api/employee"; // Your backend API base URL
+const EMPLOYEES_URL = "http://192.168.1.15:8080/api/employees"; // Separate URL for fetching all employees
 // Interface for Employee to ensure type safety
 interface Employee {
   id: string;
@@ -155,8 +154,6 @@ export const uploadProfilePicture = async (
       body: JSON.stringify({ profilePicture: base64Image }),
       
     });
-    const bodyTest = JSON.stringify({ profilePicture: base64Image });
-    console.log(bodyTest)
 
     if (!response.ok) {
       throw new Error(

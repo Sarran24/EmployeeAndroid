@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
     View,
     Text,
@@ -30,38 +31,31 @@ const EmployeeList: React.FC<{ navigation: any }> = ({ navigation }) => {
     const [error, setError] = useState<string | null>(null);
     const [sortOption, setSortOption] = useState<string>('alphabetical');
 
-    useEffect(() => {
-        const loadEmployees = async () => {
-            try {
-                const result = await fetchEmployees();
-                if (Array.isArray(result)) {
-                    setEmployees(result);
-                    setSortedEmployees(result);
-                } else {
-                    throw new Error('API did not return an array of employees');
+    // Fetch the employees when the screen is focused
+    useFocusEffect(
+        React.useCallback(() => {
+            const loadEmployees = async () => {
+                try {
+                    const result = await fetchEmployees();
+                    if (Array.isArray(result)) {
+                        setEmployees(result);
+                        setSortedEmployees(result);
+                    } else {
+                        throw new Error('API did not return an array of employees');
+                    }
+                } catch (error) {
+                    console.error('Error fetching employees:', error);
+                    setError('Failed to load employees');
+                    setEmployees([]);
                 }
-            } catch (error) {
-                console.error('Error fetching employees:', error);
-                setError('Failed to load employees');
-                setEmployees([]);
-            }
-        };
+            };
 
-        loadEmployees();
+            loadEmployees();
 
-        navigation.setOptions({
-            headerRight: () => (
-                <TouchableOpacity
-                    onPress={() => navigation.navigate('CreateEmployee')}
-                    style={styles.headerButton}
-                >
-                    <Icon name="plus" size={24} color="#007BFF" />
-                </TouchableOpacity>
-            ),
-        });
-    }, [navigation]);
+            return () => { }; // Cleanup if needed
+        }, [])
+    );
 
-    // Sorting logic
     useEffect(() => {
         let sortedList = [...employees];
         if (sortOption === 'alphabetical') {
@@ -92,7 +86,6 @@ const EmployeeList: React.FC<{ navigation: any }> = ({ navigation }) => {
                     navigation.navigate('UpdateEmployee', { employeeId: item.id })
                 }
             >
-                {/* Display profile picture with fallback */}
                 <Image
                     source={
                         item.profilePicture && item.profilePicture.trim() !== ''
@@ -117,7 +110,6 @@ const EmployeeList: React.FC<{ navigation: any }> = ({ navigation }) => {
                     <Icon name="trash" size={20} color="#FF6347" />
                 </TouchableOpacity>
             </TouchableOpacity>
-
         </View>
     );
 
