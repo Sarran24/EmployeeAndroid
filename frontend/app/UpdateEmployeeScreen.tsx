@@ -1,94 +1,185 @@
-import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React, { useEffect, useState } from 'react'
-import { getEmployee, uploadProfilePicture } from './api';
-import blankProfilePicture from '../assets/images/blank-profile-picture.png';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { Image } from 'expo-image';
+import { getEmployee, updateEmployee } from './api';
 import Icon from 'react-native-vector-icons/AntDesign';
+const blankProfilePicture = require('../assets/images/blank-profile-picture.png');
 import * as ImagePicker from 'expo-image-picker';
+import { uploadProfilePicture } from './api'; // Import the uploadProfilePicture function
 
-const UpdateEmployeeScreen = ({ route }: { route: any }) => {
+const UpdateEmployeeScreen: React.FC<{ route: any, navigation: any }> = ({ route, navigation }) => {
     const { employeeId } = route.params;
-    const [employee, setEmployee] = useState<any | null>(null);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [profilePicture, setProfilePicture] = useState<string | null>(null);
+    const [employee, setEmployee] = useState<any>(null);
+    const [name, setName] = useState('');
+    const [position, setPosition] = useState('');
+    const [salary, setSalary] = useState<number | string>(''); // Salary should be a number or empty string
+    const [profilePicture, setProfilePicture] = useState<string>(blankProfilePicture); // Always a string
+
+    console.log(profilePicture)
+
+    // Fetch employee details on screen load
+    // useEffect(() => {
+    //     const fetchEmployeeDetails = async () => {
+    //         try {
+    //             const employeeData = await getEmployee(employeeId);
+    //             setEmployee(employeeData);
+    //             setName(employeeData.body.name || '');
+    //             setPosition(employeeData.body.position || '');
+    //             setSalary(employeeData.body.salary || ''); // Set the salary correctly as a number or empty string
+    //             // Set profile picture
+    //             const fetchedProfilePicture = employeeData?.body?.profilePicture || blankProfilePicture;
+
+    //             setProfilePicture(fetchedProfilePicture);
+    //         } catch (error) {
+    //             console.error('Error fetching employee details:', error);
+    //         }
+    //     };
+    //     fetchEmployeeDetails();
+    // }, [employeeId]);
+
 
     useEffect(() => {
         const fetchEmployeeDetails = async () => {
             try {
                 const employeeData = await getEmployee(employeeId);
                 setEmployee(employeeData);
-                setProfilePicture(employeeData.body.profilePicture || null);
-            } catch (error) {
-                console.error("Error fetching employee details:", error);
-            } finally {
-                setLoading(false);
-            }
-        }
-        fetchEmployeeDetails();
-    }, []);
+                setName(employeeData.body.name || '');
+                setPosition(employeeData.body.position || '');
+                setSalary(employeeData.body.salary || '');
 
+                // Enhanced profile picture handling
+                const fetchedProfilePicture = employeeData?.body?.profilePicture;
+                if (fetchedProfilePicture) {
+                    // If it's a base64 image, ensure it starts with data:image
+                    const processedProfilePicture = fetchedProfilePicture.startsWith('data:image')
+                        ? fetchedProfilePicture
+                        : `data:image/jpeg;base64,${fetchedProfilePicture}`;
+                    setProfilePicture(processedProfilePicture);
+                } else {
+                    setProfilePicture(blankProfilePicture);
+                }
+            } catch (error) {
+                console.error('Error fetching employee details:', error);
+            }
+        };
+        fetchEmployeeDetails();
+    }, [employeeId]);
+
+    // Handle image selection
     const handleImageSelect = async () => {
-        // Request permissions
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== 'granted') {
-            alert('Permission to access the gallery is required!');
+            Alert.alert('Permission Required', 'Permission to access the gallery is required!');
             return;
         }
 
-        // Launch the image library
         const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ["images"],
+            mediaTypes: ['images'],
             allowsEditing: true,
-            base64: true, // Ensure base64 data is included
+            base64: true,
             quality: 1,
         });
 
         if (!result.canceled && result.assets && result.assets.length > 0) {
-            // Add the base64 string to the data URI format
             const base64Image = `data:image/jpeg;base64,${result.assets[0].base64}`;
-            console.log("Selected Image Base64:", base64Image); // Log the base64 image for debugging
+            // console.log(base64Image)
+            setProfilePicture(base64Image);
 
-            try {
-                // Now send the base64 string to the backend
-                const response = await uploadProfilePicture(employeeId, base64Image); // Log the response 
-                setProfilePicture(base64Image);
-            } catch (error) {
-                console.error("Error uploading profile picture:", error);
-            }
+            // Upload profile picture
+            await handleUploadProfilePicture(employeeId, base64Image);
         } else {
-            alert('You did not select any image.');
+            Alert.alert('No Image Selected', 'You did not select any image.');
         }
     };
 
-    if (loading) {
-        return (
-            <View>
-                <ActivityIndicator size="large" color="#007BFF" />
-                <Text>Loading...</Text>
-            </View>
-        );
-    }
+    // Upload profile picture
+    const handleUploadProfilePicture = async (employeeId: string, base64Image: string) => {
+        try {
+            await uploadProfilePicture(employeeId, base64Image);
+            Alert.alert('Success', 'Profile picture updated successfully');
+        } catch (error) {
+            console.error('Error uploading profile picture:', error);
+            Alert.alert('Error', 'Failed to update profile picture');
+        }
+    };
 
-    if (!employee) {
-        return (
-            <View>
-                <Text>Employee not found.</Text>
-            </View>
-        );
-    }
+    // Update employee details
+    const handleUpdateEmployee = async () => {
+        if (!name || !position || salary === '') {
+            Alert.alert('Error', 'Please fill in all fields');
+            return;
+        }
+
+        const updatedEmployee = {
+            id: employeeId,
+            name,
+            position,
+            salary: typeof salary === 'string' ? parseFloat(salary) : salary,
+            // profilePicture,
+            profilePicture: profilePicture !== blankProfilePicture ? profilePicture : null,
+            isActive: true,
+            departmentId: null,
+            roleId: null,
+        };
+
+        try {
+            await updateEmployee(employeeId, updatedEmployee);
+            Alert.alert('Success', 'Employee updated successfully', [
+                {
+                    text: 'OK',
+                    onPress: () => navigation.goBack(),
+                },
+            ]);
+        } catch (error) {
+            console.error('Error updating employee:', error);
+            Alert.alert('Error', 'Failed to update employee');
+        }
+    };
 
     return (
-        <View>
-            {/* Profile Picture Section */}
+        <View style={styles.container}>
+            <Text style={styles.title}>Update Employee</Text>
             <View style={styles.profilePictureContainer}>
                 <Image
-                    source={profilePicture ? { uri: profilePicture } : blankProfilePicture}
+                    source={
+                        profilePicture && profilePicture !== blankProfilePicture
+                            ? { uri: profilePicture }
+                            : blankProfilePicture
+                    }
                     style={styles.profilePicture}
+                    placeholder={blankProfilePicture}
+                    contentFit="cover"
                 />
                 <TouchableOpacity style={styles.addIconContainer} onPress={handleImageSelect}>
-                    {/* Use the camera icon instead of + */}
                     <Icon name="camerao" size={30} color="#fff" />
                 </TouchableOpacity>
             </View>
+
+            <View style={styles.updateForm}>
+                <TextInput
+                    style={styles.input}
+                    placeholder="Name"
+                    value={name}
+                    onChangeText={setName}
+                />
+                <TextInput
+                    style={styles.input}
+                    placeholder="Position"
+                    value={position}
+                    onChangeText={setPosition}
+                />
+                <TextInput
+                    style={styles.input}
+                    placeholder="Salary"
+                    value={salary.toString()} // Convert salary to string for TextInput
+                    onChangeText={(text) => setSalary(text)} // Handle salary change
+                    keyboardType="numeric"
+                />
+            </View>
+
+            <TouchableOpacity style={styles.button} onPress={handleUpdateEmployee}>
+                <Text style={styles.buttonText}>Update Employee</Text>
+            </TouchableOpacity>
         </View>
     );
 };
@@ -96,14 +187,8 @@ const UpdateEmployeeScreen = ({ route }: { route: any }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'flex-start',
-        alignItems: 'center',
         padding: 16,
-        backgroundColor: '#f9f9f9',
-    },
-    profilePictureContainer: {
-        position: 'relative',
-        marginBottom: 24,
+        backgroundColor: '#f5f5f5',
     },
     profilePicture: {
         width: 100,
@@ -112,6 +197,10 @@ const styles = StyleSheet.create({
         borderWidth: 4,
         borderColor: 'white',
     },
+    profilePictureContainer: {
+        position: 'relative',
+        marginBottom: 24,
+    },
     addIconContainer: {
         position: 'absolute',
         bottom: 0,
@@ -119,6 +208,35 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         padding: 5,
         elevation: 5,
+    },
+    title: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginBottom: 16,
+        textAlign: 'center',
+    },
+    updateForm: {
+        width: '90%',
+        marginLeft: 'auto',
+        marginRight: 'auto',
+    },
+    input: {
+        backgroundColor: 'white',
+        borderWidth: 1,
+        borderColor: '#ddd',
+        borderRadius: 8,
+        padding: 12,
+        marginBottom: 12,
+    },
+    button: {
+        backgroundColor: 'blue',
+        padding: 15,
+        borderRadius: 8,
+        alignItems: 'center',
+    },
+    buttonText: {
+        color: 'white',
+        fontWeight: 'bold',
     },
 });
 

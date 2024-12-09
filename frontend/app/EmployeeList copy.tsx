@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import {
     View,
@@ -8,7 +8,6 @@ import {
     TouchableOpacity,
     Alert,
     Image,
-    RefreshControl,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -31,61 +30,41 @@ const EmployeeList: React.FC<{ navigation: any }> = ({ navigation }) => {
     const [sortedEmployees, setSortedEmployees] = useState<Employee[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [sortOption, setSortOption] = useState<string>('alphabetical');
-    const [isLoading, setIsLoading] = useState(false);
 
-    // Memoized load employees function
-    const loadEmployees = useCallback(async () => {
-        if (isLoading) return;
+    // Fetch the employees when the screen is focused
+    useFocusEffect(
+        React.useCallback(() => {
+            const loadEmployees = async () => {
+                try {
+                    const result = await fetchEmployees();
+                    if (Array.isArray(result)) {
+                        setEmployees(result);
+                        setSortedEmployees(result);
+                    } else {
+                        throw new Error('API did not return an array of employees');
+                    }
+                } catch (error) {
+                    console.error('Error fetching employees:', error);
+                    setError('Failed to load employees');
+                    setEmployees([]);
+                }
+            };
 
-        setIsLoading(true);
-        setError(null);
-        try {
-            const result = await fetchEmployees();
-            if (Array.isArray(result)) {
-                setEmployees(result);
-                // Trigger initial sorting
-                sortEmployees(result, sortOption);
-            } else {
-                throw new Error('API did not return an array of employees');
-            }
-        } catch (error) {
-            console.error('Error fetching employees:', error);
-            setError('Failed to load employees');
-            setEmployees([]);
-            setSortedEmployees([]);
-        } finally {
-            setIsLoading(false);
-        }
-    }, [sortOption]);
+            loadEmployees();
 
-    // Separate sorting logic
-    const sortEmployees = useCallback((employeeList: Employee[], option: string) => {
-        let sortedList = [...employeeList];
-        if (option === 'alphabetical') {
+            return () => { }; // Cleanup if needed
+        }, [])
+    );
+
+    useEffect(() => {
+        let sortedList = [...employees];
+        if (sortOption === 'alphabetical') {
             sortedList.sort((a, b) => a.name.localeCompare(b.name));
-        } else if (option === 'salary') {
+        } else if (sortOption === 'salary') {
             sortedList.sort((a, b) => b.salary - a.salary);
         }
         setSortedEmployees(sortedList);
-    }, []);
-
-    // Initial load
-    useEffect(() => {
-        loadEmployees();
-    }, []);
-
-    // Refresh when screen is focused
-    useFocusEffect(
-        useCallback(() => {
-            loadEmployees();
-            return () => { }; // Cleanup if needed
-        }, [loadEmployees])
-    );
-
-    // Handle sort option change
-    useEffect(() => {
-        sortEmployees(employees, sortOption);
-    }, [sortOption, employees, sortEmployees]);
+    }, [sortOption, employees]);
 
     const handleDeleteEmployee = async (id: string) => {
         try {
@@ -108,13 +87,10 @@ const EmployeeList: React.FC<{ navigation: any }> = ({ navigation }) => {
                 }
             >
                 <Image
-                    source={
-                        item.profilePicture && item.profilePicture.trim() !== ''
-                            ? { uri: item.profilePicture }
-                            : blankProfilePicture
-                    }
+                    source={item.profilePicture && item.profilePicture.trim() !== ''
+                        ? { uri: item.profilePicture }
+                        : blankProfilePicture}
                     style={styles.profilePicture}
-                    defaultSource={blankProfilePicture}
                 />
                 <View style={styles.employeeInfo}>
                     <Text style={styles.employeeName}>{item.name}</Text>
@@ -135,14 +111,10 @@ const EmployeeList: React.FC<{ navigation: any }> = ({ navigation }) => {
         </View>
     );
 
-    // Render error state
     if (error) {
         return (
             <View style={styles.errorContainer}>
                 <Text style={styles.errorMessage}>{error}</Text>
-                <TouchableOpacity onPress={loadEmployees} style={styles.retryButton}>
-                    <Text style={styles.retryButtonText}>Retry</Text>
-                </TouchableOpacity>
             </View>
         );
     }
@@ -165,18 +137,8 @@ const EmployeeList: React.FC<{ navigation: any }> = ({ navigation }) => {
                 keyExtractor={(item) => item.id}
                 renderItem={renderEmployeeItem}
                 contentContainerStyle={styles.listContent}
-                refreshControl={
-                    <RefreshControl
-                        refreshing={isLoading}
-                        onRefresh={loadEmployees}
-                        colors={['#007BFF']}
-                        tintColor="#007BFF"
-                    />
-                }
                 ListEmptyComponent={
-                    <Text style={styles.emptyMessage}>
-                        {isLoading ? 'Loading employees...' : 'No employees found.'}
-                    </Text>
+                    <Text style={styles.emptyMessage}>No employees found.</Text>
                 }
             />
             {/* Add New Employee Button */}
@@ -184,7 +146,7 @@ const EmployeeList: React.FC<{ navigation: any }> = ({ navigation }) => {
                 style={styles.addButton}
                 onPress={() => navigation.navigate('CreateEmployee')}
             >
-                <Icon name="plus" size={24} color="#fff" />
+                <Icon name="plus" size={16} color="#fff" style={styles.iconStyle} />
             </TouchableOpacity>
         </View>
     );
@@ -197,6 +159,11 @@ const styles = StyleSheet.create({
     },
     listContent: {
         padding: 16,
+    },
+    iconStyle: {
+        padding: 5,
+        fontWeight: 400,// Optional, adds a background if needed
+        borderRadius: 20,  // Optional, rounds the background
     },
     employeeCard: {
         backgroundColor: '#fff',
@@ -280,35 +247,15 @@ const styles = StyleSheet.create({
     addButton: {
         position: 'absolute',
         bottom: 20,
-        right: 20,
-        width: 56, // Standardized size
-        height: 56, // Square button
-        borderRadius: 28, // Fully rounded
-        backgroundColor: '#007BFF', // Vibrant blue
-        justifyContent: 'center',
-        alignItems: 'center',
-        elevation: 6, // Enhanced shadow for depth
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
+        right: 30,
+        borderRadius: 50,
+        borderWidth: 1, // Sets the border thickness
+        borderColor: 'white', // Sets the border color
+        backgroundColor: '#1e1e1e',
+        padding: 15,
+        elevation: 5, // Shadow for Android
     },
-    iconStyle: {
-        color: 'white',
-        // Remove previous styling
-    },
-    retryButton: {
-        marginTop: 16,
-        backgroundColor: '#007BFF',
-        padding: 10,
-        borderRadius: 8,
-    },
-    retryButtonText: {
-        color: 'white',
-        textAlign: 'center',
-        fontWeight: 'bold',
-    },
-    // ... (rest of the styles remain the same)
+
 });
 
 export default EmployeeList;
