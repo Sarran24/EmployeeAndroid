@@ -1,21 +1,42 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, Dimensions } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Image } from 'expo-image';
 import { getEmployee, updateEmployee } from './api';
 import Icon from 'react-native-vector-icons/AntDesign';
 const blankProfilePicture = require('../assets/images/blank-profile-picture.png');
 import * as ImagePicker from 'expo-image-picker';
-import { uploadProfilePicture } from './api';
-
-const { width } = Dimensions.get('window');
+import { uploadProfilePicture } from './api'; // Import the uploadProfilePicture function
 
 const UpdateEmployeeScreen: React.FC<{ route: any, navigation: any }> = ({ route, navigation }) => {
     const { employeeId } = route.params;
     const [employee, setEmployee] = useState<any>(null);
     const [name, setName] = useState('');
     const [position, setPosition] = useState('');
-    const [salary, setSalary] = useState<number | string>('');
-    const [profilePicture, setProfilePicture] = useState<string>(blankProfilePicture);
+    const [salary, setSalary] = useState<number | string>(''); // Salary should be a number or empty string
+    const [profilePicture, setProfilePicture] = useState<string>(blankProfilePicture); // Always a string
+
+    console.log(profilePicture)
+
+    // Fetch employee details on screen load
+    // useEffect(() => {
+    //     const fetchEmployeeDetails = async () => {
+    //         try {
+    //             const employeeData = await getEmployee(employeeId);
+    //             setEmployee(employeeData);
+    //             setName(employeeData.body.name || '');
+    //             setPosition(employeeData.body.position || '');
+    //             setSalary(employeeData.body.salary || ''); // Set the salary correctly as a number or empty string
+    //             // Set profile picture
+    //             const fetchedProfilePicture = employeeData?.body?.profilePicture || blankProfilePicture;
+
+    //             setProfilePicture(fetchedProfilePicture);
+    //         } catch (error) {
+    //             console.error('Error fetching employee details:', error);
+    //         }
+    //     };
+    //     fetchEmployeeDetails();
+    // }, [employeeId]);
+
 
     useEffect(() => {
         const fetchEmployeeDetails = async () => {
@@ -26,8 +47,10 @@ const UpdateEmployeeScreen: React.FC<{ route: any, navigation: any }> = ({ route
                 setPosition(employeeData.body.position || '');
                 setSalary(employeeData.body.salary || '');
 
+                // Enhanced profile picture handling
                 const fetchedProfilePicture = employeeData?.body?.profilePicture;
                 if (fetchedProfilePicture) {
+                    // If it's a base64 image, ensure it starts with data:image
                     const processedProfilePicture = fetchedProfilePicture.startsWith('data:image')
                         ? fetchedProfilePicture
                         : `data:image/jpeg;base64,${fetchedProfilePicture}`;
@@ -42,6 +65,7 @@ const UpdateEmployeeScreen: React.FC<{ route: any, navigation: any }> = ({ route
         fetchEmployeeDetails();
     }, [employeeId]);
 
+    // Handle image selection
     const handleImageSelect = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== 'granted') {
@@ -58,14 +82,17 @@ const UpdateEmployeeScreen: React.FC<{ route: any, navigation: any }> = ({ route
 
         if (!result.canceled && result.assets && result.assets.length > 0) {
             const base64Image = `data:image/jpeg;base64,${result.assets[0].base64}`;
+            // console.log(base64Image)
             setProfilePicture(base64Image);
 
+            // Upload profile picture
             await handleUploadProfilePicture(employeeId, base64Image);
         } else {
             Alert.alert('No Image Selected', 'You did not select any image.');
         }
     };
 
+    // Upload profile picture
     const handleUploadProfilePicture = async (employeeId: string, base64Image: string) => {
         try {
             await uploadProfilePicture(employeeId, base64Image);
@@ -76,6 +103,7 @@ const UpdateEmployeeScreen: React.FC<{ route: any, navigation: any }> = ({ route
         }
     };
 
+    // Update employee details
     const handleUpdateEmployee = async () => {
         if (!name || !position || salary === '') {
             Alert.alert('Error', 'Please fill in all fields');
@@ -87,6 +115,7 @@ const UpdateEmployeeScreen: React.FC<{ route: any, navigation: any }> = ({ route
             name,
             position,
             salary: typeof salary === 'string' ? parseFloat(salary) : salary,
+            // profilePicture,
             profilePicture: profilePicture !== blankProfilePicture ? profilePicture : null,
             isActive: true,
             departmentId: null,
@@ -121,7 +150,7 @@ const UpdateEmployeeScreen: React.FC<{ route: any, navigation: any }> = ({ route
                     contentFit="cover"
                 />
                 <TouchableOpacity style={styles.addIconContainer} onPress={handleImageSelect}>
-                    <Icon name="camerao" size={24} color="#1e1e1e" />
+                    <Icon name="camerao" size={30} color="#1e1e1e" />
                 </TouchableOpacity>
             </View>
 
@@ -141,8 +170,8 @@ const UpdateEmployeeScreen: React.FC<{ route: any, navigation: any }> = ({ route
                 <TextInput
                     style={styles.input}
                     placeholder="Salary"
-                    value={salary.toString()}
-                    onChangeText={(text) => setSalary(text)}
+                    value={salary.toString()} // Convert salary to string for TextInput
+                    onChangeText={(text) => setSalary(text)} // Handle salary change
                     keyboardType="numeric"
                 />
             </View>
@@ -161,30 +190,31 @@ const styles = StyleSheet.create({
         backgroundColor: '#f5f5f5',
     },
     profilePicture: {
-        width: width * 0.3,  // 30% of screen width
-        height: width * 0.3, // 30% of screen width
-        borderRadius: (width * 0.3) / 2,
+        width: 100,
+        height: 100,
+        borderRadius: 50,
         borderWidth: 4,
         borderColor: 'white',
-        alignSelf: 'center',
     },
     profilePictureContainer: {
-        alignItems: 'center',
-        marginBottom: 40,
         position: 'relative',
+        flex:0.5,
+        alignItems:'center',
+        // marginBottom: 24,
     },
     addIconContainer: {
         position: 'absolute',
-        bottom: -10,  // Positioned below the profile picture
-        right: width * 0.3,  // Aligned with the right edge of the profile picture
-        backgroundColor: 'white',
+        bottom: 105,
+        right: 140,
         borderRadius: 20,
-        padding: 8,
+        padding: 5,
         elevation: 5,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
+    },
+    title: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginBottom: 16,
+        textAlign: 'center',
     },
     updateForm: {
         width: '90%',
@@ -204,9 +234,6 @@ const styles = StyleSheet.create({
         padding: 15,
         borderRadius: 8,
         alignItems: 'center',
-        marginTop: 16,
-        width: '50%',  // Reduce button width to 80% of container
-        alignSelf: "center", // Center the button horizontally
     },
     buttonText: {
         color: 'white',

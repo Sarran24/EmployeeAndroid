@@ -170,7 +170,6 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         padding: 16,
         marginBottom: 12,
-        flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
         elevation: 2,

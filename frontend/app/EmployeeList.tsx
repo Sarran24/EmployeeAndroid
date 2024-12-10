@@ -193,6 +193,7 @@ const EmployeeList: React.FC<{ navigation: any }> = ({ navigation }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        // backgroundColor: '#1e1e1e',
         backgroundColor: '#f8f9fa',
     },
     listContent: {
@@ -203,9 +204,9 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         padding: 16,
         marginBottom: 12,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
+        // flexDirection: 'row',
+        // alignItems: 'center',
+        justifyContent: 'center',
         elevation: 2,
     },
     employeeDetails: {
